@@ -1,0 +1,1876 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Intervalos para dos poblaciones</title>
+<meta name="description" content="Laboratorio interactivo de 20 minutos sobre la Sesion 5 (ppt 40 a 53): intervalos de confianza para dos poblaciones, cociente de varianzas (F de Fisher), diferencia de medias (z y t-Student, casos I, II y III) y diferencia de proporciones, con casos aleatorios de 2026, cronometro, puntaje sobre 20, retroalimentacion y constancia de participacion.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box}
+:root{
+  --ground:#EDF2F1; --surface:#FFFFFF; --surface-2:#F5F9F8; --surface-3:#E4EDEB;
+  --ink:#0F1E1D; --ink-2:#42605D; --ink-3:#728E8B;
+  --line:#D2DEDC; --line-2:#B4C6C3;
+  --accent:#0E6E77; --accent-2:#0B565D; --accent-soft:#D6EAEB; --on-accent:#FFFFFF;
+  --amber:#9C6612; --amber-soft:#F9EDD5; --amber-line:#E0C48A;
+  --ok:#1B7A4C; --ok-soft:#DCF0E4;
+  --bad:#A93A2C; --bad-soft:#F8E3DF;
+  --shadow:0 1px 2px rgba(15,30,29,.05), 0 8px 24px -12px rgba(15,30,29,.18);
+  --radius:10px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#091312; --surface:#101F1E; --surface-2:#152726; --surface-3:#1C3231;
+    --ink:#E6EEEC; --ink-2:#A9C0BD; --ink-3:#7C9491;
+    --line:#223836; --line-2:#33504D;
+    --accent:#43B5BA; --accent-2:#6FD0D3; --accent-soft:#10312F; --on-accent:#04191A;
+    --amber:#E0AC4C; --amber-soft:#31260F; --amber-line:#5C4A1E;
+    --ok:#4FBE84; --ok-soft:#0F2C1F;
+    --bad:#E5806E; --bad-soft:#331813;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px -14px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#091312; --surface:#101F1E; --surface-2:#152726; --surface-3:#1C3231;
+  --ink:#E6EEEC; --ink-2:#A9C0BD; --ink-3:#7C9491;
+  --line:#223836; --line-2:#33504D;
+  --accent:#43B5BA; --accent-2:#6FD0D3; --accent-soft:#10312F; --on-accent:#04191A;
+  --amber:#E0AC4C; --amber-soft:#31260F; --amber-line:#5C4A1E;
+  --ok:#4FBE84; --ok-soft:#0F2C1F;
+  --bad:#E5806E; --bad-soft:#331813;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px -14px rgba(0,0,0,.7);
+}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:"Source Serif 4","Iowan Old Style",Georgia,serif;
+  font-size:17px; line-height:1.6;
+}
+h1,h2,h3,h4{font-family:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;font-weight:700;text-wrap:balance;margin:0;line-height:1.15;letter-spacing:-.015em}
+.mono,input,.num,table.freq,.chip,.tag{font-family:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;font-variant-numeric:tabular-nums}
+p{margin:0}
+button{font:inherit;cursor:pointer}
+a{color:var(--accent)}
+
+/* ---------- shell ---------- */
+.wrap{max-width:880px;margin:0 auto;padding:0 20px 96px}
+.bar{
+  position:sticky;top:0;z-index:40;background:color-mix(in srgb,var(--surface) 92%,transparent);
+  backdrop-filter:blur(8px);border-bottom:1px solid var(--line);
+}
+.bar-in{max-width:880px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.brand{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-weight:700;font-size:.82rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin-right:auto;display:flex;align-items:center;gap:9px}
+.brand .dot{width:9px;height:9px;border-radius:2px;background:var(--accent);display:inline-block}
+.timer{
+  font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;font-size:1.15rem;font-weight:600;
+  padding:4px 11px;border-radius:8px;background:var(--surface-3);color:var(--ink);border:1px solid var(--line-2);
+  letter-spacing:.02em;
+}
+.timer.warn{background:var(--amber-soft);color:var(--amber);border-color:var(--amber-line)}
+.timer.crit{background:var(--bad-soft);color:var(--bad);border-color:var(--bad);animation:pulse 1s steps(2,end) infinite}
+@keyframes pulse{50%{opacity:.45}}
+@media (prefers-reduced-motion:reduce){.timer.crit{animation:none}}
+.scorepill{font-family:"IBM Plex Mono",monospace;font-size:.85rem;padding:5px 10px;border-radius:8px;background:var(--accent-soft);color:var(--accent);border:1px solid transparent;font-weight:600}
+.iconbtn{background:transparent;border:1px solid var(--line-2);color:var(--ink-2);border-radius:8px;width:34px;height:34px;display:grid;place-items:center;font-size:.95rem}
+.iconbtn:hover{border-color:var(--accent);color:var(--accent)}
+.iconbtn:focus-visible,button:focus-visible,input:focus-visible,.opt:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+
+.track{height:3px;background:var(--line);position:relative}
+.track > i{display:block;height:100%;background:var(--accent);width:0;transition:width .45s cubic-bezier(.2,.7,.3,1)}
+
+/* ---------- generic blocks ---------- */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.eyebrow{font-family:"IBM Plex Mono",monospace;font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3)}
+.lead{color:var(--ink-2);font-size:1.02rem}
+.btn{
+  border:1px solid transparent;background:var(--accent);color:var(--on-accent);
+  font-family:"Bricolage Grotesque",system-ui,sans-serif;font-weight:600;font-size:.95rem;
+  padding:11px 20px;border-radius:8px;transition:background .15s,transform .08s;
+}
+.btn:hover{background:var(--accent-2)}
+.btn:active{transform:translateY(1px)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--accent);border-color:var(--line-2)}
+.btn.ghost:hover{border-color:var(--accent);background:var(--accent-soft)}
+
+/* ---------- intro ---------- */
+.hero{padding:52px 0 28px}
+.hero h1{font-size:clamp(2rem,5.2vw,3.1rem);margin:14px 0 12px}
+.hero h1 em{font-style:normal;color:var(--accent);font-variant:normal}
+.rulecard{margin-top:26px;padding:22px;display:grid;gap:14px}
+.rulegrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.rule{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:13px 14px}
+.rule b{display:block;font-family:"Bricolage Grotesque",sans-serif;font-size:.9rem;margin-bottom:3px}
+.rule span{font-size:.88rem;color:var(--ink-2)}
+.idform{display:grid;gap:12px;grid-template-columns:1fr 1fr;margin-top:8px}
+.field{display:grid;gap:5px}
+.field label{font-family:"IBM Plex Mono",monospace;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+input[type=text],input[type=number]{
+  background:var(--surface-2);border:1px solid var(--line-2);border-radius:7px;color:var(--ink);
+  padding:10px 12px;font-size:1rem;width:100%;
+}
+input::placeholder{color:var(--ink-3);opacity:.7}
+input.ok{border-color:var(--ok);background:var(--ok-soft)}
+input.bad{border-color:var(--bad);background:var(--bad-soft)}
+.full{grid-column:1/-1}
+
+/* ---------- exercise ---------- */
+.ctx{margin:24px 0;padding:22px;border-left:3px solid var(--accent)}
+.ctx h2{font-size:1.35rem;margin-bottom:8px}
+.ctx .src{margin-top:12px;font-size:.8rem;color:var(--ink-3);font-family:"IBM Plex Mono",monospace}
+.databox{margin-top:16px;border:1px solid var(--line);border-radius:8px;background:var(--surface-2);overflow:hidden}
+.databox header{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 13px;border-bottom:1px solid var(--line);background:var(--surface-3);flex-wrap:wrap}
+.databox header span{font-family:"IBM Plex Mono",monospace;font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
+.datagrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:2px 6px;padding:12px 13px;font-family:"IBM Plex Mono",monospace;font-size:.83rem;font-variant-numeric:tabular-nums;max-height:none}
+.datagrid b{font-weight:600;color:var(--accent);background:var(--accent-soft);border-radius:4px;padding:0 3px;margin:0 -3px}
+
+.step{margin-top:16px;padding:22px;position:relative;scroll-margin-top:76px}
+.step[hidden]{display:none}
+.step .head{display:flex;align-items:baseline;gap:12px;margin-bottom:6px}
+.step .no{font-family:"IBM Plex Mono",monospace;font-size:.78rem;color:var(--accent);border:1px solid var(--accent);border-radius:5px;padding:1px 7px;flex:none}
+.step h3{font-size:1.18rem}
+.step .say{color:var(--ink-2);font-size:.97rem;margin:8px 0 0}
+.formula{
+  margin:14px 0;padding:13px 16px;background:var(--surface-2);border:1px solid var(--line);border-left:3px solid var(--amber);
+  border-radius:6px;font-family:"IBM Plex Mono",monospace;font-size:.92rem;color:var(--ink);overflow-x:auto;white-space:pre-wrap
+}
+.formula small{display:block;color:var(--ink-2);font-size:.82rem;margin-top:6px;white-space:normal}
+.inputs{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-top:14px}
+.hintline{margin-top:10px;font-size:.86rem;color:var(--ink-3)}
+.actions{margin-top:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.verdict{margin-top:14px;padding:12px 14px;border-radius:8px;font-size:.93rem;display:none}
+.verdict.show{display:block}
+.verdict.good{background:var(--ok-soft);border:1px solid var(--ok);color:var(--ok)}
+.verdict.bad{background:var(--bad-soft);border:1px solid var(--bad);color:var(--bad)}
+.verdict b{font-family:"Bricolage Grotesque",sans-serif}
+.done{padding:13px 20px;display:flex;gap:12px;align-items:center;font-size:.9rem;color:var(--ink-2);flex-wrap:wrap}
+.done .no{font-family:"IBM Plex Mono",monospace;font-size:.74rem;color:var(--ink-3);border:1px solid var(--line-2);border-radius:5px;padding:1px 7px}
+.done .pts{margin-left:auto;font-family:"IBM Plex Mono",monospace;font-size:.82rem;padding:2px 8px;border-radius:20px}
+.pts.p-full{background:var(--ok-soft);color:var(--ok)}
+.pts.p-part{background:var(--amber-soft);color:var(--amber)}
+.pts.p-zero{background:var(--bad-soft);color:var(--bad)}
+
+.opts{display:grid;gap:8px;margin-top:14px}
+.opt{display:flex;gap:11px;align-items:flex-start;padding:11px 14px;border:1px solid var(--line-2);border-radius:8px;background:var(--surface-2);cursor:pointer;font-size:.95rem}
+.opt:hover{border-color:var(--accent)}
+.opt input{margin-top:5px;accent-color:var(--accent);flex:none}
+/* la opcion marcada tiene que verse tambien en tema oscuro, donde el radio solo cambia de tono */
+.opt:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.opt:has(input:checked) span{color:var(--ink);font-weight:600}
+
+table.freq{width:100%;border-collapse:collapse;font-size:.88rem;margin-top:14px}
+table.freq th,table.freq td{border:1px solid var(--line);padding:7px 9px;text-align:right}
+table.freq th{background:var(--surface-3);font-weight:600;text-align:center;font-size:.78rem;letter-spacing:.03em;color:var(--ink-2)}
+table.freq td:first-child,table.freq th:first-child{text-align:left}
+table.freq tr.total td{background:var(--surface-3);font-weight:700}
+table.freq input{padding:5px 7px;font-size:.86rem;text-align:right;max-width:88px}
+.tablescroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.sumline{margin-top:9px;font-family:"IBM Plex Mono",monospace;font-size:.83rem;color:var(--ink-3)}
+.sumline.hit{color:var(--ok)}
+
+/* ---------- results ---------- */
+.result-hero{margin-top:26px;padding:30px 26px;text-align:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.grade{font-family:"Bricolage Grotesque",sans-serif;font-size:clamp(3.2rem,12vw,5rem);font-weight:800;line-height:1;color:var(--accent);font-variant-numeric:tabular-nums}
+.grade small{font-size:.28em;color:var(--ink-3);font-weight:600}
+.badge{display:inline-block;margin-top:12px;padding:6px 15px;border-radius:20px;font-family:"Bricolage Grotesque",sans-serif;font-size:.9rem;font-weight:600}
+.fb{margin-top:12px;padding:16px 18px;border-radius:9px;border:1px solid var(--line);background:var(--surface)}
+.fb h4{font-size:1rem;margin-bottom:4px;display:flex;gap:9px;align-items:center}
+.fb .mark{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:.72rem;color:#fff;flex:none}
+.fb .mark.y{background:var(--ok)}.fb .mark.n{background:var(--bad)}.fb .mark.p{background:var(--amber)}
+.fb dl{display:grid;grid-template-columns:auto 1fr;gap:2px 14px;margin:9px 0 0;font-size:.88rem}
+.fb dt{font-family:"IBM Plex Mono",monospace;font-size:.74rem;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3);padding-top:3px}
+.fb dd{margin:0;font-family:"IBM Plex Mono",monospace;font-size:.86rem}
+.fb .tip{margin-top:10px;font-size:.9rem;color:var(--ink-2);border-left:2px solid var(--amber);padding-left:11px}
+.chartbox{margin-top:14px;padding:18px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius)}
+.chartbox canvas{width:100%;height:auto;display:block}
+.figcap{font-size:.82rem;color:var(--ink-3);margin-top:9px;font-family:"IBM Plex Mono",monospace}
+
+/* ---------- constancia ---------- */
+.cert{
+  margin-top:26px;background:var(--surface);border:1px solid var(--line-2);border-radius:var(--radius);
+  padding:34px 30px;position:relative;overflow:hidden;box-shadow:var(--shadow);
+}
+.cert::before{content:"";position:absolute;inset:0;border:1px solid var(--accent);border-radius:var(--radius);margin:9px;opacity:.35;pointer-events:none}
+.cert .kicker{text-align:center;font-family:"IBM Plex Mono",monospace;font-size:.7rem;letter-spacing:.24em;text-transform:uppercase;color:var(--accent)}
+.cert h2{text-align:center;font-size:clamp(1.4rem,4.5vw,1.95rem);margin:12px 0 4px}
+.cert .who{text-align:center;font-family:"Bricolage Grotesque",sans-serif;font-size:clamp(1.3rem,4.5vw,1.7rem);font-weight:700;margin:18px 0 6px;color:var(--accent);text-wrap:balance}
+.cert .body{text-align:center;max-width:56ch;margin:0 auto;color:var(--ink-2);font-size:.98rem}
+.cert .meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;margin-top:26px;padding-top:18px;border-top:1px solid var(--line)}
+.cert .meta div{text-align:center}
+.cert .meta dt{font-family:"IBM Plex Mono",monospace;font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
+.cert .meta dd{margin:3px 0 0;font-family:"Bricolage Grotesque",sans-serif;font-weight:600;font-size:1rem}
+.cert .sig{margin-top:24px;text-align:center;font-size:.78rem;color:var(--ink-3);font-family:"IBM Plex Mono",monospace}
+.endbar{display:flex;gap:10px;justify-content:center;margin-top:22px;flex-wrap:wrap}
+
+.foot{margin-top:40px;text-align:center;font-size:.8rem;color:var(--ink-3);font-family:"IBM Plex Mono",monospace}
+
+@media (max-width:620px){
+  body{font-size:16px}
+  .wrap{padding:0 14px 80px}
+  .idform{grid-template-columns:1fr}
+  .step,.ctx,.cert{padding:18px 16px}
+}
+
+@media print{
+  .bar,.track,.endbar,.foot,#screen-intro,#screen-exercise,#results-body{display:none !important}
+  body{background:#fff;color:#000}
+  .cert{border:1px solid #999;box-shadow:none;margin:0;page-break-inside:avoid}
+  .cert .who{color:#000}
+}
+
+/* ---------- tablas cruzadas del laboratorio 2 ---------- */
+.xtab{width:100%;border-collapse:collapse;font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:.85rem;font-variant-numeric:tabular-nums}
+.xtab th,.xtab td{border:1px solid var(--line);padding:6px 7px;text-align:center}
+.xtab thead th{background:var(--accent);color:var(--on-accent);font-weight:600;font-size:.76rem;letter-spacing:.02em}
+.xtab thead th.corner{background:var(--surface-3);color:var(--ink-2);text-align:left;font-weight:600}
+.xtab tbody th{background:var(--surface-2);color:var(--ink);text-align:left;font-weight:600;font-size:.8rem;white-space:nowrap}
+.xtab td.tot,.xtab th.tot{background:var(--surface-3);font-weight:700}
+.xtab input{width:100%;max-width:74px;padding:5px 6px;text-align:center;font-size:.85rem}
+.xtab tfoot th,.xtab tfoot td{background:var(--surface-3);font-weight:700}
+.xtab caption{caption-side:top;text-align:left;padding:0 0 8px;font-family:"Source Serif 4",Georgia,serif;font-size:.9rem;color:var(--ink-2)}
+.basetab{width:100%;table-layout:auto;border-collapse:collapse;font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:.74rem;font-variant-numeric:tabular-nums}
+.basetab th,.basetab td{border:1px solid var(--line);padding:4px 5px;white-space:nowrap}
+.basetab td:first-child{color:var(--ink-3)}
+.basetab thead th{background:var(--surface-3);color:var(--ink-2);font-size:.66rem;letter-spacing:.04em;text-transform:uppercase;position:sticky;top:0;white-space:normal;line-height:1.25;vertical-align:bottom}
+.basetab td.num{text-align:right}
+.basetab tbody tr:nth-child(even){background:var(--surface-2)}
+.basewrap{max-height:340px;overflow:auto;border:1px solid var(--line);border-radius:8px}
+.pair{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px}
+.pill{display:inline-block;padding:4px 12px;border-radius:20px;font-family:"IBM Plex Mono",monospace;font-size:.74rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#fff;background:var(--accent)}
+.pill.ord{background:var(--ink-2)}
+.pill.cont,.pill.disc{background:var(--amber)}
+.pair .x{font-family:"Source Serif 4",Georgia,serif;font-size:1.05rem;color:var(--ink-3)}
+
+/* ---------- laboratorio 3: medidas de posición ---------- */
+.datatab{width:100%;border-collapse:collapse;font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:.82rem;font-variant-numeric:tabular-nums}
+.datatab th,.datatab td{border:1px solid var(--line);padding:5px 7px;text-align:center;white-space:nowrap}
+.datatab thead th{background:var(--surface-3);color:var(--ink-2);font-size:.68rem;letter-spacing:.05em;text-transform:uppercase;position:sticky;top:0}
+.datatab tbody tr:nth-child(even){background:var(--surface-2)}
+.datatab td.val{text-align:right;font-weight:600;padding-right:28px}
+.datatab th:nth-child(1),.datatab td:nth-child(1){width:14%}
+.datatab th:nth-child(2),.datatab td:nth-child(2){width:34%}
+.datatab th:nth-child(3),.datatab td:nth-child(3){width:52%}
+.datatab td.cat{text-align:left;color:var(--ink-2)}
+.resumen{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.chip{display:inline-flex;align-items:center;gap:7px;padding:6px 12px;border-radius:8px;background:var(--surface-3);
+  border:1px solid var(--line-2);font-family:"IBM Plex Mono",monospace;font-size:.83rem}
+.chip b{color:var(--accent);font-weight:600}
+.chip.amb{background:var(--amber-soft);border-color:var(--amber-line)}
+.chip.amb b{color:var(--amber)}
+.minitab{border-collapse:collapse;font-family:"IBM Plex Mono",monospace;font-size:.85rem;margin-top:12px}
+.minitab th,.minitab td{border:1px solid var(--line);padding:6px 12px;text-align:center}
+.minitab th{background:var(--surface-3);font-size:.74rem;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-2)}
+.propbox{margin-top:14px;display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+.prop{padding:10px 13px;border-radius:8px;background:var(--surface-2);border:1px solid var(--line);
+  font-family:"IBM Plex Mono",monospace;font-size:.84rem}
+.prop span{display:block;color:var(--ink-3);font-size:.74rem;margin-top:3px;font-family:"Source Serif 4",Georgia,serif}
+
+/* ---------- laboratorio 4: variabilidad, forma y diagrama de cajas ---------- */
+.sumtab{width:100%;border-collapse:collapse;font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:.85rem;font-variant-numeric:tabular-nums;margin-top:12px}
+.sumtab th,.sumtab td{border:1px solid var(--line);padding:6px 9px;text-align:right;white-space:nowrap}
+.sumtab thead th{background:var(--surface-3);color:var(--ink-2);font-size:.7rem;letter-spacing:.05em;text-transform:uppercase;text-align:center}
+.sumtab tbody th{background:var(--surface-2);text-align:left;font-weight:600;color:var(--ink)}
+.sumtab tr.total td,.sumtab tr.total th{background:var(--surface-3);font-weight:700}
+.grid2{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));margin-top:14px}
+.gcard{border:1px solid var(--line);border-radius:9px;background:var(--surface-2);padding:13px 15px}
+.gcard h5{font-family:"Bricolage Grotesque",sans-serif;font-size:.95rem;margin:0 0 8px;color:var(--accent);display:flex;align-items:center;gap:8px}
+.gcard h5 i{width:10px;height:10px;border-radius:3px;background:currentColor;display:inline-block;font-style:normal;flex:none}
+.gcard dl{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;margin:0;font-family:"IBM Plex Mono",monospace;font-size:.84rem}
+.gcard dt{color:var(--ink-3)}
+.gcard dd{margin:0;font-weight:600;text-align:right}
+.boxwrap{margin-top:14px;padding:14px 16px;background:var(--surface);border:1px solid var(--line);border-radius:9px}
+.boxwrap canvas{width:100%;height:auto;display:block}
+.boxwrap .figcap{margin-top:8px}
+.tag{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.74rem;font-weight:600;letter-spacing:.03em;
+  background:var(--surface-3);border:1px solid var(--line-2);color:var(--ink-2)}
+.logros{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));margin-top:14px}
+.logro{display:flex;gap:11px;align-items:center;padding:11px 13px;border-radius:9px;border:1px solid var(--line);background:var(--surface-2)}
+.logro .ic{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;flex:none;font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:.95rem;background:var(--surface-3);color:var(--ink-3)}
+.logro.on{border-color:var(--accent);background:var(--accent-soft)}
+.logro.on .ic{background:var(--accent);color:var(--on-accent)}
+.logro b{display:block;font-family:"Bricolage Grotesque",sans-serif;font-size:.86rem;line-height:1.25}
+.logro span{font-size:.78rem;color:var(--ink-3)}
+.logro.on span{color:var(--ink-2)}
+.warnbox{margin-top:12px;padding:11px 14px;border-radius:8px;background:var(--amber-soft);border:1px solid var(--amber-line);
+  color:var(--amber);font-size:.88rem}
+
+/* ---------- laboratorio 5: probabilidades ---------- */
+.vennbox{margin-top:14px;padding:16px 14px 10px;background:var(--surface-2);border:1px solid var(--line);border-radius:9px}
+.vennbox svg{width:100%;height:auto;display:block;max-width:520px;margin:0 auto}
+.vennbox .figcap{text-align:center;margin-top:8px}
+.vn-rect{fill:none;stroke:var(--line-2);stroke-width:1.5}
+.vn-a{fill:var(--accent);fill-opacity:.16;stroke:var(--accent);stroke-width:1.8}
+.vn-b{fill:var(--amber);fill-opacity:.16;stroke:var(--amber);stroke-width:1.8}
+.vn-lab{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-weight:700;font-size:15px;fill:var(--ink-2)}
+.vn-om{font-family:"IBM Plex Mono",monospace;font-size:13px;fill:var(--ink-3)}
+.vn-val{font-family:"IBM Plex Mono",monospace;font-size:15px;font-weight:600;fill:var(--ink);text-anchor:middle}
+.vn-val.q{fill:var(--ink-3)}
+.vn-val.hit{fill:var(--accent)}
+.vn-tag{font-family:"IBM Plex Mono",monospace;font-size:10.5px;fill:var(--ink-3);text-anchor:middle}
+
+.ctab{width:100%;border-collapse:collapse;font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:.86rem;font-variant-numeric:tabular-nums;margin-top:12px}
+.ctab th,.ctab td{border:1px solid var(--line);padding:7px 9px;text-align:center;transition:background .2s}
+.ctab thead th{background:var(--accent);color:var(--on-accent);font-weight:600;font-size:.78rem}
+.ctab thead th.corner{background:var(--surface-3);color:var(--ink-2);text-align:left}
+.ctab tbody th{background:var(--surface-2);color:var(--ink);text-align:left;font-weight:600;font-size:.8rem;white-space:nowrap}
+.ctab .tot{background:var(--surface-3);font-weight:700}
+.ctab td.mk{background:var(--accent-soft);color:var(--accent);font-weight:700;box-shadow:inset 0 0 0 1.5px var(--accent)}
+.ctab td.mk2{background:var(--amber-soft);color:var(--amber);font-weight:700;box-shadow:inset 0 0 0 1.5px var(--amber-line)}
+.ctab td.mk3{background:var(--ok-soft);color:var(--ok);font-weight:700;box-shadow:inset 0 0 0 1.5px var(--ok)}
+.ctab caption{caption-side:top;text-align:left;padding:0 0 8px;font-family:"Source Serif 4",Georgia,serif;font-size:.9rem;color:var(--ink-2)}
+
+.parte{margin:26px 0 0;padding:14px 20px;border-radius:9px;background:var(--accent);color:var(--on-accent);
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.parte b{font-family:"Bricolage Grotesque",sans-serif;font-size:1.05rem}
+.parte span{font-size:.9rem;opacity:.9}
+
+.aviso{position:fixed;left:50%;transform:translateX(-50%);bottom:24px;z-index:80;max-width:520px;width:calc(100% - 32px);
+  background:var(--amber-soft);border:2px solid var(--amber);color:var(--amber);border-radius:12px;padding:16px 18px;
+  box-shadow:0 12px 40px -12px rgba(0,0,0,.45);display:flex;gap:14px;align-items:flex-start;
+  animation:subir .35s cubic-bezier(.2,.9,.3,1)}
+@keyframes subir{from{opacity:0;transform:translate(-50%,22px)}to{opacity:1;transform:translate(-50%,0)}}
+@media (prefers-reduced-motion:reduce){.aviso{animation:none}}
+.aviso[hidden]{display:none}
+.aviso .ic{font-family:"IBM Plex Mono",monospace;font-size:1.5rem;line-height:1;flex:none;margin-top:2px}
+.aviso b{display:block;font-family:"Bricolage Grotesque",sans-serif;font-size:1rem;margin-bottom:3px}
+.aviso p{font-size:.9rem;color:var(--ink-2)}
+.aviso button{margin-top:10px;background:var(--amber);color:#fff;border:none;border-radius:7px;padding:7px 14px;
+  font-family:"Bricolage Grotesque",sans-serif;font-weight:600;font-size:.87rem}
+.timer.aviso3{background:var(--amber-soft);color:var(--amber);border-color:var(--amber);animation:pulse 1.1s steps(2,end) 6}
+
+@media (max-width:620px){
+  .ctab th,.ctab td{padding:6px 7px;font-size:.79rem}
+  .ctab thead th.corner{max-width:128px;white-space:normal;line-height:1.25}
+  .ctab tbody th{white-space:normal;line-height:1.25}
+  .vennbox{padding:12px 8px 8px}
+  .aviso{bottom:14px;padding:14px}
+}
+
+[hidden]{display:none !important}
+
+/* ---------- gráfico de barras de la distribución (Sesión 4) ---------- */
+.barbox{margin-top:14px;padding:14px 12px 8px;background:var(--surface-2);border:1px solid var(--line);border-radius:9px}
+.barbox svg{width:100%;height:auto;display:block;max-width:640px;margin:0 auto}
+.barbox .figcap{text-align:center;margin-top:6px}
+.br{fill:var(--line-2)}
+.br.on{fill:var(--accent)}
+.br.off{fill:var(--amber)}
+.br-x{font-family:"IBM Plex Mono",monospace;font-size:11px;fill:var(--ink-3);text-anchor:middle}
+.br-v{font-family:"IBM Plex Mono",monospace;font-size:10px;fill:var(--accent);text-anchor:middle;font-weight:600}
+.br-ax{stroke:var(--line-2);stroke-width:1}
+.br-t{font-family:"IBM Plex Mono",monospace;font-size:10px;fill:var(--ink-3)}
+.leyenda{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:6px;font-family:"IBM Plex Mono",monospace;font-size:.75rem;color:var(--ink-3)}
+.leyenda i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+@media (max-width:620px){
+  .barbox{overflow-x:auto;-webkit-overflow-scrolling:touch;padding:10px 6px 8px}
+  .barbox svg{min-width:520px}
+  .barbox .figcap,.leyenda{position:sticky;left:0}
+}
+
+/* en los pasos las etiquetas llevan notación matemática: en mayúsculas λ se vuelve Λ y e^(−λ) se vuelve E^(−Λ) */
+.step .field label{text-transform:none;letter-spacing:.02em;font-size:.78rem}
+
+
+/* ---------- laboratorio 8: normal estándar, t-Student y tamaño de muestra ---------- */
+.cv-on{fill:var(--accent);fill-opacity:.38}
+.cv-off{fill:var(--amber);fill-opacity:.38}
+.cv-line{fill:none;stroke:var(--ink-2);stroke-width:1.6}
+.cv-ax{stroke:var(--line-2);stroke-width:1}
+.cv-mk{stroke:var(--ink);stroke-width:1;stroke-dasharray:3 3}
+.cv-tx{font-family:"IBM Plex Mono",monospace;font-size:13px;fill:var(--ink-3);text-anchor:middle}
+.cv-mt{font-family:"IBM Plex Mono",monospace;font-size:14px;font-weight:600;fill:var(--accent);text-anchor:middle}
+.fig2{display:grid;gap:12px;grid-template-columns:1fr;margin-top:6px}
+.fig2 .barbox{min-width:0}
+.minis{display:grid;gap:12px;margin-top:14px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+table.zt{border-collapse:collapse;font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:.76rem;font-variant-numeric:tabular-nums;width:100%}
+.zt th,.zt td{border:1px solid var(--line);padding:3px 6px;text-align:right;white-space:nowrap}
+.zt thead th{background:var(--surface-3);color:var(--ink-2);position:sticky;top:0;z-index:1}
+.zt tbody th{background:var(--surface-2);text-align:left;position:sticky;left:0}
+.zt .hl{background:var(--amber-soft);color:var(--amber);font-weight:700}
+.zt tr.sep td{background:var(--ink-3);padding:1px;border:0}
+.zt.mini{font-size:.74rem;min-width:520px}
+.btn.small{padding:6px 12px;font-size:.84rem}
+.drawer{position:fixed;z-index:60;right:0;top:0;bottom:0;width:min(580px,100vw);background:var(--surface);border-left:1px solid var(--line-2);box-shadow:var(--shadow);display:flex;flex-direction:column}
+.drawer[hidden]{display:none}
+.drawer header{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.drawer header b{font-family:"Bricolage Grotesque",system-ui,sans-serif;margin-right:auto}
+.dtabs{display:flex;gap:6px}
+.dtabs button{border:1px solid var(--line-2);background:transparent;color:var(--ink-2);border-radius:7px;padding:5px 11px;font-size:.82rem}
+.dtabs button.on{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.dpane{overflow:auto;flex:1;padding:0 8px 8px}
+.dpane[hidden]{display:none}
+.dnote{margin:0;padding:8px 14px;font-size:.78rem;color:var(--ink-3);border-top:1px solid var(--line)}
+@media (max-width:620px){.drawer{top:auto;height:74vh;width:100vw;border-left:0;border-top:1px solid var(--line-2)}.bar-in{gap:8px}}
+@media print{.drawer{display:none !important}}
+.caso{margin:10px 0 12px;padding:14px 16px;background:var(--surface-2);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:8px}
+.caso h4{font-size:1.02rem;margin:3px 0 6px}
+.caso p{font-size:.95rem;color:var(--ink-2)}
+.caso .src{font-size:.76rem;color:var(--ink-3);font-family:"IBM Plex Mono",monospace;margin-top:8px}
+.ejr summary{cursor:pointer;font-family:"Bricolage Grotesque",system-ui,sans-serif;font-weight:600;font-size:.95rem;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface-2);margin-top:8px}
+.ejr[open] summary{border-color:var(--accent)}
+.ejr .formula{margin-top:8px}
+.minicap{font-size:.8rem;color:var(--ink-3);font-family:"IBM Plex Mono",monospace;margin:0}
+@media (max-width:620px){.barbox svg.cv{min-width:440px}}
+
+.barbox svg.cv.ic{max-width:480px;min-width:0}
+@media (max-width:620px){.barbox svg.cv.ic{min-width:0}}
+#tablesBtn[hidden],#timer[hidden],#scorepill[hidden]{display:none !important}
+
+/* ---- tabla F de Fisher ---- */
+.fsel{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.fsel button{border:1px solid var(--line-2);background:transparent;color:var(--ink-2);border-radius:7px;padding:5px 11px;font-size:.82rem;cursor:pointer}
+.fsel button.on{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.fnote{font-size:.85rem;color:var(--ink-2);margin:4px 0 8px}
+.ftabscroll{overflow:auto;max-width:100%}
+table.ft th,table.ft td{padding:3px 6px;font-size:.78rem}
+</style>
+</head>
+<body>
+<div class="bar">
+  <div class="bar-in">
+    <div class="brand"><span class="dot"></span> Estadística · Sesión 5 · dos poblaciones</div>
+    <div id="scorepill" class="scorepill" hidden>0.0 / 20</div>
+    <button id="tablesBtn" class="btn ghost small" type="button" aria-expanded="false" aria-controls="drawer">Tablas Z, t y F</button>
+    <div id="timer" class="timer" hidden>20:00</div>
+    <button id="themeBtn" class="iconbtn" type="button" aria-label="Cambiar tema" title="Cambiar tema">◐</button>
+  </div>
+  <div class="track"><i id="trackFill"></i></div>
+</div>
+
+<aside id="drawer" class="drawer" hidden aria-label="Tablas de distribución">
+  <header>
+    <b>Tablas de consulta</b>
+    <div class="dtabs">
+      <button id="tab-z" type="button" class="on">Normal estándar</button>
+      <button id="tab-t" type="button">t-Student</button>
+      <button id="tab-f" type="button">F de Fisher</button>
+    </div>
+    <button id="drawerClose" class="iconbtn" type="button" aria-label="Cerrar tablas">✕</button>
+  </header>
+  <div class="dpane" id="pane-z"></div>
+  <div class="dpane" id="pane-t" hidden></div>
+  <div class="dpane" id="pane-f" hidden></div>
+  <p class="dnote">Normal estándar: área a la izquierda, P(Z ≤ z); fila = parte entera y primer decimal, columna = segundo decimal. t-Student: valores t según los grados de libertad r y el área P(X ≤ t) de la cabecera. F de Fisher: valores F(α/2 ; ν₁ , ν₂) con área α/2 a la derecha; ν₁ = columna (numerador), ν₂ = fila (denominador). Los valores de F son exactos a 2 decimales; si tu tabla impresa difiere en ±0.01, también se acepta.</p>
+</aside>
+
+<main class="wrap">
+
+  <!-- ================= INTRO ================= -->
+  <section id="screen-intro">
+    <div class="hero">
+      <div class="eyebrow">Sesión 5 · intervalos de confianza para dos poblaciones</div>
+      <h1>Comparar dos grupos y <em>decidir si de verdad son distintos</em></h1>
+      <p class="lead">Practica los <strong>intervalos de confianza para dos poblaciones</strong>: el <strong>cociente de varianzas</strong> con la tabla F, la <strong>diferencia de medias</strong> (σ conocidas con z; σ desconocidas con t, casos II y III) y la <strong>diferencia de proporciones</strong>. Cada intento trae casos nuevos de 2026, tienes 20 minutos y el cronómetro te avisa cuando falten 3.</p>
+    </div>
+
+    <div class="card rulecard">
+      <div class="eyebrow">Lo que vas a usar</div>
+      <div class="rulegrid">
+        <div class="rule"><b>Cociente de varianzas</b><span>Se usa la F de Fisher. Si el intervalo de σ₁²/σ₂² contiene el 1, las varianzas son similares (homogéneas); si no, son diferentes.</span></div>
+        <div class="rule"><b>Diferencia de medias</b><span>σ conocidas: z. σ desconocidas: t. Si las varianzas son similares (caso II) se usa la varianza combinada y n₁ + n₂ − 2 gl; si son diferentes (caso III), g grados de libertad.</span></div>
+        <div class="rule"><b>Diferencia de proporciones</b><span>Se usa z con p₁ y p₂. El error estándar suma las varianzas de las dos proporciones dentro de una sola raíz.</span></div>
+        <div class="rule"><b>¿Hay diferencia?</b><span>Si el intervalo de una diferencia (μ₁ − μ₂ o π₁ − π₂) contiene el 0, no hay evidencia de diferencia. Si es todo positivo, el primero es mayor; si es todo negativo, es menor.</span></div>
+      </div>
+
+      <div class="formula">Cociente:  s₁²/s₂² × 1/F(α/2 ; n₁−1 , n₂−1)  ≤  σ₁²/σ₂²  ≤  s₁²/s₂² × F(α/2 ; n₂−1 , n₁−1)
+Caso I  (σ conocidas):         (x̄₁ − x̄₂) ± z(1−α/2) · √( σ₁²/n₁ + σ₂²/n₂ )
+Caso II (σ desc., similares):  (x̄₁ − x̄₂) ± t(1−α/2 ; n₁+n₂−2) · sp · √(1/n₁ + 1/n₂)
+Caso III (σ desc., diferentes): (x̄₁ − x̄₂) ± t(1−α/2 ; g) · √( s₁²/n₁ + s₂²/n₂ )
+Proporciones:  (p₁ − p₂) ± z(1−α/2) · √( p₁(1−p₁)/n₁ + p₂(1−p₂)/n₂ )
+<small>sp = √[((n₁−1)s₁² + (n₂−1)s₂²)/(n₁+n₂−2)];  g = (s₁²/n₁ + s₂²/n₂)² / [ (s₁²/n₁)²/(n₁−1) + (s₂²/n₂)²/(n₂−1) ], redondeado al entero más cercano. Redondea z a 2 decimales; t se lee tal cual (3 decimales) y F con 2 decimales.</small></div>
+
+      <div class="eyebrow" style="margin-top:6px">Antes de empezar: ejemplos resueltos paso a paso</div>
+      <p class="lead" style="font-size:.94rem">Son los ejemplos de la sesión, calculados con las mismas tablas. Ábrelos si quieres repasar el método.</p>
+      <div id="ejemplos"></div>
+
+      <div class="eyebrow" style="margin-top:14px">Identifícate</div>
+      <div class="idform">
+        <div class="field"><label for="in-ape">Apellidos</label><input type="text" id="in-ape" autocomplete="family-name" placeholder="Quispe Rojas"></div>
+        <div class="field"><label for="in-nom">Nombres</label><input type="text" id="in-nom" autocomplete="given-name" placeholder="María Isabel"></div>
+        <div class="field"><label for="in-cod">Código / DNI <span style="text-transform:none;letter-spacing:0">(opcional)</span></label><input type="text" id="in-cod" placeholder="2026xxxxx"></div>
+        <div class="field"><label for="in-sec">Sección / NRC <span style="text-transform:none;letter-spacing:0">(opcional)</span></label><input type="text" id="in-sec" placeholder="EST42016 - 01"></div>
+        <div class="full" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+          <button id="startBtn" class="btn" type="button">Comenzar los 20 minutos</button>
+          <span id="idErr" style="color:var(--bad);font-size:.88rem"></span>
+        </div>
+      </div>
+      <p class="hintline">Son 7 pasos y 20 puntos: elección del intervalo y cociente de varianzas (6 pts), diferencia de medias (8 pts), diferencia de proporciones (3.5 pts) e interpretación (2.5 pts). Cada paso se corrige apenas lo envías y te explica en qué te equivocaste.</p>
+    </div>
+  </section>
+
+  <!-- ================= EXERCISE ================= -->
+  <section id="screen-exercise" hidden>
+    <div class="card ctx">
+      <div class="eyebrow" id="ctx-tag">Caso</div>
+      <h2 id="ctx-title"></h2>
+      <p class="lead" id="ctx-text"></p>
+      <p class="src" id="ctx-src"></p>
+      <div class="resumen" id="ctx-datos"></div>
+    </div>
+    <div id="steps"></div>
+  </section>
+
+  <!-- ================= RESULTS ================= -->
+  <section id="screen-results" hidden>
+    <div id="results-body">
+      <div class="result-hero">
+        <div class="eyebrow">Resultado del laboratorio</div>
+        <div class="grade" id="r-grade">0.0<small> / 20</small></div>
+        <div class="badge" id="r-badge"></div>
+        <p class="lead" id="r-line" style="margin-top:14px"></p>
+      </div>
+
+      <h3 style="margin:26px 0 4px">Logros</h3>
+      <p class="lead" style="font-size:.94rem">Lo que conseguiste en este intento.</p>
+      <div class="logros" id="r-logros"></div>
+
+      <h3 style="margin:30px 0 4px">Qué dominas y qué te falta</h3>
+      <div class="propbox" id="r-diagnostico"></div>
+
+      <h3 style="margin:30px 0 4px">Retroalimentación paso a paso</h3>
+      <p class="lead" style="font-size:.94rem">Tu respuesta frente a la correcta, y qué revisar en cada caso.</p>
+      <div id="r-feedback"></div>
+
+      <h3 style="margin:32px 0 4px">Tus intervalos de un vistazo</h3>
+      <p class="lead" style="font-size:.94rem" id="r-cvcap"></p>
+      <div class="chartbox"><div id="r-cv"></div></div>
+
+      <h3 style="margin:32px 0 4px">Resumen de los cálculos</h3>
+      <div class="chartbox"><div class="tablescroll" id="r-resumen"></div></div>
+    </div>
+
+    <div class="cert" id="constancia">
+      <div class="kicker">Constancia de participación</div>
+      <h2>Laboratorio de intervalos de confianza para dos poblaciones</h2>
+      <p class="body" style="text-align:center;margin-top:6px">Se deja constancia de que el/la estudiante</p>
+      <div class="who" id="c-name"></div>
+      <p class="body">participó en el laboratorio interactivo de la <strong>Sesión 5</strong> del curso de Estadística, construyendo e interpretando <strong>intervalos de confianza para dos poblaciones</strong>: el <strong>cociente de varianzas</strong> (F de Fisher), la <strong>diferencia de medias</strong> (z y t-Student, casos I, II y III) y la <strong>diferencia de proporciones</strong>.</p>
+      <div class="meta">
+        <div><dt>Casos · medias</dt><dd id="c-caso1"></dd></div>
+        <div><dt>Casos · proporciones e inverso</dt><dd id="c-caso2"></dd></div>
+        <div><dt>Puntaje</dt><dd id="c-score"></dd></div>
+        <div><dt>Tiempo empleado</dt><dd id="c-time"></dd></div>
+        <div><dt>Fecha</dt><dd id="c-date"></dd></div>
+      </div>
+      <div class="sig">Código de verificación: <span id="c-code"></span> · Curso de Estadística · Sesión 5 · dos poblaciones</div>
+    </div>
+
+    <div class="endbar">
+      <button class="btn" type="button" id="printBtn">Imprimir / Guardar constancia en PDF</button>
+      <button class="btn ghost" type="button" id="againBtn">Practicar con otros casos</button>
+    </div>
+  </section>
+
+  <p class="foot">Los contextos son situaciones reales de 2026; los datos son simulados con fines didácticos.</p>
+</main>
+
+<div class="aviso" id="aviso3" hidden role="alert">
+  <span class="ic">⏳</span>
+  <div>
+    <b>Quedan 3 minutos</b>
+    <p id="aviso-txt">Te faltan pasos por responder. Prioriza terminarlos: cada paso que envíes suma, y lo que quede en blanco vale cero.</p>
+    <button type="button" id="avisoBtn">Entendido, sigo</button>
+  </div>
+</div>
+
+<script>
+(function () {
+"use strict";
+/* =========================================================================
+   Laboratorio — Intervalos de confianza para DOS poblaciones (Sesión 5, ppt 40 a 53)
+   Cociente de varianzas (F de Fisher), diferencia de medias (σ conocidas, σ desconocidas
+   similares o diferentes) y diferencia de proporciones. Tablas Z, t y F.
+   Casos nuevos y aleatorios en cada intento.
+   ========================================================================= */
+
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var pick = function (a) { return a[Math.floor(Math.random() * a.length)]; };
+  var shuffle = function (a) {
+    a = a.slice();
+    for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; }
+    return a;
+  };
+  var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]; }); };
+  /* acepta 0.4138 · 0,4138 · -0.51 · −0.51 · 60/145 · 41.38% */
+  var num = function (v) {
+    var s = String(v == null ? "" : v).replace(/\s/g, "").replace(",", ".").replace(/[−–]/g, "-");
+    if (!s) return null;
+    var pct = false;
+    if (s.charAt(s.length - 1) === "%") { pct = true; s = s.slice(0, -1); }
+    var x;
+    if (s.indexOf("/") > 0) {
+      var p = s.split("/");
+      if (p.length !== 2) return null;
+      var a = parseFloat(p[0]), b = parseFloat(p[1]);
+      if (!isFinite(a) || !isFinite(b) || b === 0) return null;
+      x = a / b;
+    } else { x = parseFloat(s); }
+    if (!isFinite(x)) return null;
+    return pct ? x / 100 : x;
+  };
+  /* tolerancia de las probabilidades leídas de la tabla (5 decimales):
+     se acepta redondear a 4 decimales; con valores chicos se exige más precisión */
+  var tolP = function (x) { return x < 0.02 ? 0.0002 : 0.0006; };
+  var eq = function (a, b, tol) { return a != null && Math.abs(a - b) <= (tol == null ? tolP(b) : tol); };
+  var f5 = function (x) { return x.toFixed(5); };
+  var f4 = function (x) { return x.toFixed(4); };
+  var f3 = function (x) { return x.toFixed(3); };
+  var f2 = function (x) { return x.toFixed(2); };
+  var fd = function (x, d) { return x.toFixed(d); };
+  var fmt = function (s, o) { return String(s).replace(/\{(\w+)\}/g, function (m, k) { return o[k] == null ? m : o[k]; }); };
+  var ri = function (a, b) { return a + Math.floor(Math.random() * (b - a + 1)); };
+  var cap = function (s) { return String(s).charAt(0).toUpperCase() + String(s).slice(1); };
+  var neg = function (s) { return String(s).replace(/^-/, "−"); };      /* −1.63 con signo menos tipográfico */
+  var kz = function (k) { return neg(f2(k / 100)); };                       /* hundredths → "−1.63" */
+
+  /* ---------------- tabla normal estándar (cola izquierda, 5 decimales) ----------------
+     Se lee como en la ppt: fila = parte entera y primer decimal, columna = segundo decimal.
+     Valores calculados con la normal exacta y redondeados a 5 decimales. */
+  var ZT={neg:[[50000,49601,49202,48803,48405,48006,47608,47210,46812,46414],[46017,45620,45224,44828,44433,44038,43644,43251,42858,42465],[42074,41683,41294,40905,40517,40129,39743,39358,38974,38591],[38209,37828,37448,37070,36693,36317,35942,35569,35197,34827],[34458,34090,33724,33360,32997,32636,32276,31918,31561,31207],[30854,30503,30153,29806,29460,29116,28774,28434,28096,27760],[27425,27093,26763,26435,26109,25785,25463,25143,24825,24510],[24196,23885,23576,23270,22965,22663,22363,22065,21770,21476],[21186,20897,20611,20327,20045,19766,19489,19215,18943,18673],[18406,18141,17879,17619,17361,17106,16853,16602,16354,16109],[15866,15625,15386,15151,14917,14686,14457,14231,14007,13786],[13567,13350,13136,12924,12714,12507,12302,12100,11900,11702],[11507,11314,11123,10935,10749,10565,10383,10204,10027,9853],[9680,9510,9342,9176,9012,8851,8691,8534,8379,8226],[8076,7927,7780,7636,7493,7353,7215,7078,6944,6811],[6681,6552,6426,6301,6178,6057,5938,5821,5705,5592],[5480,5370,5262,5155,5050,4947,4846,4746,4648,4551],[4457,4363,4272,4182,4093,4006,3920,3836,3754,3673],[3593,3515,3438,3362,3288,3216,3144,3074,3005,2938],[2872,2807,2743,2680,2619,2559,2500,2442,2385,2330],[2275,2222,2169,2118,2068,2018,1970,1923,1876,1831],[1786,1743,1700,1659,1618,1578,1539,1500,1463,1426],[1390,1355,1321,1287,1255,1222,1191,1160,1130,1101],[1072,1044,1017,990,964,939,914,889,866,842],[820,798,776,755,734,714,695,676,657,639],[621,604,587,570,554,539,523,508,494,480],[466,453,440,427,415,402,391,379,368,357],[347,336,326,317,307,298,289,280,272,264],[256,248,240,233,226,219,212,205,199,193],[187,181,175,169,164,159,154,149,144,139],[135,131,126,122,118,114,111,107,104,100],[97,94,90,87,84,82,79,76,74,71],[69,66,64,62,60,58,56,54,52,50],[48,47,45,43,42,40,39,38,36,35],[34,32,31,30,29,28,27,26,25,24],[23,22,22,21,20,19,19,18,17,17],[16,15,15,14,14,13,13,12,12,11],[11,10,10,10,9,9,8,8,8,8],[7,7,7,6,6,6,6,5,5,5],[5,5,4,4,4,4,4,4,3,3]],pos:[[50000,50399,50798,51197,51595,51994,52392,52790,53188,53586],[53983,54380,54776,55172,55567,55962,56356,56749,57142,57535],[57926,58317,58706,59095,59483,59871,60257,60642,61026,61409],[61791,62172,62552,62930,63307,63683,64058,64431,64803,65173],[65542,65910,66276,66640,67003,67364,67724,68082,68439,68793],[69146,69497,69847,70194,70540,70884,71226,71566,71904,72240],[72575,72907,73237,73565,73891,74215,74537,74857,75175,75490],[75804,76115,76424,76730,77035,77337,77637,77935,78230,78524],[78814,79103,79389,79673,79955,80234,80511,80785,81057,81327],[81594,81859,82121,82381,82639,82894,83147,83398,83646,83891],[84134,84375,84614,84849,85083,85314,85543,85769,85993,86214],[86433,86650,86864,87076,87286,87493,87698,87900,88100,88298],[88493,88686,88877,89065,89251,89435,89617,89796,89973,90147],[90320,90490,90658,90824,90988,91149,91309,91466,91621,91774],[91924,92073,92220,92364,92507,92647,92785,92922,93056,93189],[93319,93448,93574,93699,93822,93943,94062,94179,94295,94408],[94520,94630,94738,94845,94950,95053,95154,95254,95352,95449],[95543,95637,95728,95818,95907,95994,96080,96164,96246,96327],[96407,96485,96562,96638,96712,96784,96856,96926,96995,97062],[97128,97193,97257,97320,97381,97441,97500,97558,97615,97670],[97725,97778,97831,97882,97932,97982,98030,98077,98124,98169],[98214,98257,98300,98341,98382,98422,98461,98500,98537,98574],[98610,98645,98679,98713,98745,98778,98809,98840,98870,98899],[98928,98956,98983,99010,99036,99061,99086,99111,99134,99158],[99180,99202,99224,99245,99266,99286,99305,99324,99343,99361],[99379,99396,99413,99430,99446,99461,99477,99492,99506,99520],[99534,99547,99560,99573,99585,99598,99609,99621,99632,99643],[99653,99664,99674,99683,99693,99702,99711,99720,99728,99736],[99744,99752,99760,99767,99774,99781,99788,99795,99801,99807],[99813,99819,99825,99831,99836,99841,99846,99851,99856,99861],[99865,99869,99874,99878,99882,99886,99889,99893,99896,99900],[99903,99906,99910,99913,99916,99918,99921,99924,99926,99929],[99931,99934,99936,99938,99940,99942,99944,99946,99948,99950],[99952,99953,99955,99957,99958,99960,99961,99962,99964,99965],[99966,99968,99969,99970,99971,99972,99973,99974,99975,99976],[99977,99978,99978,99979,99980,99981,99981,99982,99983,99983],[99984,99985,99985,99986,99986,99987,99987,99988,99988,99989],[99989,99990,99990,99990,99991,99991,99992,99992,99992,99992],[99993,99993,99993,99994,99994,99994,99994,99995,99995,99995],[99995,99995,99996,99996,99996,99996,99996,99996,99997,99997]]};
+var TT={df:[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 40, 60, 120],p:[0.9, 0.95, 0.975, 0.99, 0.995],v:[[3.078,6.314,12.706,31.821,63.657],[1.886,2.92,4.303,6.965,9.925],[1.638,2.353,3.182,4.541,5.841],[1.533,2.132,2.776,3.747,4.604],[1.476,2.015,2.571,3.365,4.032],[1.44,1.943,2.447,3.143,3.707],[1.415,1.895,2.365,2.998,3.499],[1.397,1.86,2.306,2.896,3.355],[1.383,1.833,2.262,2.821,3.25],[1.372,1.812,2.228,2.764,3.169],[1.363,1.796,2.201,2.718,3.106],[1.356,1.782,2.179,2.681,3.055],[1.35,1.771,2.16,2.65,3.012],[1.345,1.761,2.145,2.624,2.977],[1.341,1.753,2.131,2.602,2.947],[1.337,1.746,2.12,2.583,2.921],[1.333,1.74,2.11,2.567,2.898],[1.33,1.734,2.101,2.552,2.878],[1.328,1.729,2.093,2.539,2.861],[1.325,1.725,2.086,2.528,2.845],[1.323,1.721,2.08,2.518,2.831],[1.321,1.717,2.074,2.508,2.819],[1.319,1.714,2.069,2.5,2.807],[1.318,1.711,2.064,2.492,2.797],[1.316,1.708,2.06,2.485,2.787],[1.315,1.706,2.056,2.479,2.779],[1.314,1.703,2.052,2.473,2.771],[1.313,1.701,2.048,2.467,2.763],[1.311,1.699,2.045,2.462,2.756],[1.31,1.697,2.042,2.457,2.75],[1.303,1.684,2.021,2.423,2.704],[1.296,1.671,2.0,2.39,2.66],[1.289,1.658,1.98,2.358,2.617]]};
+var FT={"a":[0.05,0.025,0.01,0.005],"n":30,"v":[[[161.45,199.5,215.71,224.58,230.16,233.99,236.77,238.88,240.54,241.88,242.98,243.91,244.69,245.36,245.95,246.46,246.92,247.32,247.69,248.01,248.31,248.58,248.83,249.05,249.26,249.45,249.63,249.8,249.95,250.1],[18.51,19.0,19.16,19.25,19.3,19.33,19.35,19.37,19.38,19.4,19.4,19.41,19.42,19.42,19.43,19.43,19.44,19.44,19.44,19.45,19.45,19.45,19.45,19.45,19.46,19.46,19.46,19.46,19.46,19.46],[10.13,9.55,9.28,9.12,9.01,8.94,8.89,8.85,8.81,8.79,8.76,8.74,8.73,8.71,8.7,8.69,8.68,8.67,8.67,8.66,8.65,8.65,8.64,8.64,8.63,8.63,8.63,8.62,8.62,8.62],[7.71,6.94,6.59,6.39,6.26,6.16,6.09,6.04,6.0,5.96,5.94,5.91,5.89,5.87,5.86,5.84,5.83,5.82,5.81,5.8,5.79,5.79,5.78,5.77,5.77,5.76,5.76,5.75,5.75,5.75],[6.61,5.79,5.41,5.19,5.05,4.95,4.88,4.82,4.77,4.74,4.7,4.68,4.66,4.64,4.62,4.6,4.59,4.58,4.57,4.56,4.55,4.54,4.53,4.53,4.52,4.52,4.51,4.5,4.5,4.5],[5.99,5.14,4.76,4.53,4.39,4.28,4.21,4.15,4.1,4.06,4.03,4.0,3.98,3.96,3.94,3.92,3.91,3.9,3.88,3.87,3.86,3.86,3.85,3.84,3.83,3.83,3.82,3.82,3.81,3.81],[5.59,4.74,4.35,4.12,3.97,3.87,3.79,3.73,3.68,3.64,3.6,3.57,3.55,3.53,3.51,3.49,3.48,3.47,3.46,3.44,3.43,3.43,3.42,3.41,3.4,3.4,3.39,3.39,3.38,3.38],[5.32,4.46,4.07,3.84,3.69,3.58,3.5,3.44,3.39,3.35,3.31,3.28,3.26,3.24,3.22,3.2,3.19,3.17,3.16,3.15,3.14,3.13,3.12,3.12,3.11,3.1,3.1,3.09,3.08,3.08],[5.12,4.26,3.86,3.63,3.48,3.37,3.29,3.23,3.18,3.14,3.1,3.07,3.05,3.03,3.01,2.99,2.97,2.96,2.95,2.94,2.93,2.92,2.91,2.9,2.89,2.89,2.88,2.87,2.87,2.86],[4.96,4.1,3.71,3.48,3.33,3.22,3.14,3.07,3.02,2.98,2.94,2.91,2.89,2.86,2.85,2.83,2.81,2.8,2.79,2.77,2.76,2.75,2.75,2.74,2.73,2.72,2.72,2.71,2.7,2.7],[4.84,3.98,3.59,3.36,3.2,3.09,3.01,2.95,2.9,2.85,2.82,2.79,2.76,2.74,2.72,2.7,2.69,2.67,2.66,2.65,2.64,2.63,2.62,2.61,2.6,2.59,2.59,2.58,2.58,2.57],[4.75,3.89,3.49,3.26,3.11,3.0,2.91,2.85,2.8,2.75,2.72,2.69,2.66,2.64,2.62,2.6,2.58,2.57,2.56,2.54,2.53,2.52,2.51,2.51,2.5,2.49,2.48,2.48,2.47,2.47],[4.67,3.81,3.41,3.18,3.03,2.92,2.83,2.77,2.71,2.67,2.63,2.6,2.58,2.55,2.53,2.51,2.5,2.48,2.47,2.46,2.45,2.44,2.43,2.42,2.41,2.41,2.4,2.39,2.39,2.38],[4.6,3.74,3.34,3.11,2.96,2.85,2.76,2.7,2.65,2.6,2.57,2.53,2.51,2.48,2.46,2.44,2.43,2.41,2.4,2.39,2.38,2.37,2.36,2.35,2.34,2.33,2.33,2.32,2.31,2.31],[4.54,3.68,3.29,3.06,2.9,2.79,2.71,2.64,2.59,2.54,2.51,2.48,2.45,2.42,2.4,2.38,2.37,2.35,2.34,2.33,2.32,2.31,2.3,2.29,2.28,2.27,2.27,2.26,2.25,2.25],[4.49,3.63,3.24,3.01,2.85,2.74,2.66,2.59,2.54,2.49,2.46,2.42,2.4,2.37,2.35,2.33,2.32,2.3,2.29,2.28,2.26,2.25,2.24,2.24,2.23,2.22,2.21,2.21,2.2,2.19],[4.45,3.59,3.2,2.96,2.81,2.7,2.61,2.55,2.49,2.45,2.41,2.38,2.35,2.33,2.31,2.29,2.27,2.26,2.24,2.23,2.22,2.21,2.2,2.19,2.18,2.17,2.17,2.16,2.15,2.15],[4.41,3.55,3.16,2.93,2.77,2.66,2.58,2.51,2.46,2.41,2.37,2.34,2.31,2.29,2.27,2.25,2.23,2.22,2.2,2.19,2.18,2.17,2.16,2.15,2.14,2.13,2.13,2.12,2.11,2.11],[4.38,3.52,3.13,2.9,2.74,2.63,2.54,2.48,2.42,2.38,2.34,2.31,2.28,2.26,2.23,2.21,2.2,2.18,2.17,2.16,2.14,2.13,2.12,2.11,2.11,2.1,2.09,2.08,2.08,2.07],[4.35,3.49,3.1,2.87,2.71,2.6,2.51,2.45,2.39,2.35,2.31,2.28,2.25,2.22,2.2,2.18,2.17,2.15,2.14,2.12,2.11,2.1,2.09,2.08,2.07,2.07,2.06,2.05,2.05,2.04],[4.32,3.47,3.07,2.84,2.68,2.57,2.49,2.42,2.37,2.32,2.28,2.25,2.22,2.2,2.18,2.16,2.14,2.12,2.11,2.1,2.08,2.07,2.06,2.05,2.05,2.04,2.03,2.02,2.02,2.01],[4.3,3.44,3.05,2.82,2.66,2.55,2.46,2.4,2.34,2.3,2.26,2.23,2.2,2.17,2.15,2.13,2.11,2.1,2.08,2.07,2.06,2.05,2.04,2.03,2.02,2.01,2.0,2.0,1.99,1.98],[4.28,3.42,3.03,2.8,2.64,2.53,2.44,2.37,2.32,2.27,2.24,2.2,2.18,2.15,2.13,2.11,2.09,2.08,2.06,2.05,2.04,2.02,2.01,2.01,2.0,1.99,1.98,1.97,1.97,1.96],[4.26,3.4,3.01,2.78,2.62,2.51,2.42,2.36,2.3,2.25,2.22,2.18,2.15,2.13,2.11,2.09,2.07,2.05,2.04,2.03,2.01,2.0,1.99,1.98,1.97,1.97,1.96,1.95,1.95,1.94],[4.24,3.39,2.99,2.76,2.6,2.49,2.4,2.34,2.28,2.24,2.2,2.16,2.14,2.11,2.09,2.07,2.05,2.04,2.02,2.01,2.0,1.98,1.97,1.96,1.96,1.95,1.94,1.93,1.93,1.92],[4.23,3.37,2.98,2.74,2.59,2.47,2.39,2.32,2.27,2.22,2.18,2.15,2.12,2.09,2.07,2.05,2.03,2.02,2.0,1.99,1.98,1.97,1.96,1.95,1.94,1.93,1.92,1.91,1.91,1.9],[4.21,3.35,2.96,2.73,2.57,2.46,2.37,2.31,2.25,2.2,2.17,2.13,2.1,2.08,2.06,2.04,2.02,2.0,1.99,1.97,1.96,1.95,1.94,1.93,1.92,1.91,1.9,1.9,1.89,1.88],[4.2,3.34,2.95,2.71,2.56,2.45,2.36,2.29,2.24,2.19,2.15,2.12,2.09,2.06,2.04,2.02,2.0,1.99,1.97,1.96,1.95,1.93,1.92,1.91,1.91,1.9,1.89,1.88,1.88,1.87],[4.18,3.33,2.93,2.7,2.55,2.43,2.35,2.28,2.22,2.18,2.14,2.1,2.08,2.05,2.03,2.01,1.99,1.97,1.96,1.94,1.93,1.92,1.91,1.9,1.89,1.88,1.88,1.87,1.86,1.85],[4.17,3.32,2.92,2.69,2.53,2.42,2.33,2.27,2.21,2.16,2.13,2.09,2.06,2.04,2.01,1.99,1.98,1.96,1.95,1.93,1.92,1.91,1.9,1.89,1.88,1.87,1.86,1.85,1.85,1.84]],[[647.79,799.5,864.16,899.58,921.85,937.11,948.22,956.66,963.28,968.63,973.03,976.71,979.84,982.53,984.87,986.92,988.73,990.35,991.8,993.1,994.29,995.36,996.35,997.25,998.08,998.85,999.56,1000.22,1000.84,1001.41],[38.51,39.0,39.17,39.25,39.3,39.33,39.36,39.37,39.39,39.4,39.41,39.41,39.42,39.43,39.43,39.44,39.44,39.44,39.45,39.45,39.45,39.45,39.45,39.46,39.46,39.46,39.46,39.46,39.46,39.46],[17.44,16.04,15.44,15.1,14.88,14.73,14.62,14.54,14.47,14.42,14.37,14.34,14.3,14.28,14.25,14.23,14.21,14.2,14.18,14.17,14.16,14.14,14.13,14.12,14.12,14.11,14.1,14.09,14.09,14.08],[12.22,10.65,9.98,9.6,9.36,9.2,9.07,8.98,8.9,8.84,8.79,8.75,8.71,8.68,8.66,8.63,8.61,8.59,8.58,8.56,8.55,8.53,8.52,8.51,8.5,8.49,8.48,8.48,8.47,8.46],[10.01,8.43,7.76,7.39,7.15,6.98,6.85,6.76,6.68,6.62,6.57,6.52,6.49,6.46,6.43,6.4,6.38,6.36,6.34,6.33,6.31,6.3,6.29,6.28,6.27,6.26,6.25,6.24,6.23,6.23],[8.81,7.26,6.6,6.23,5.99,5.82,5.7,5.6,5.52,5.46,5.41,5.37,5.33,5.3,5.27,5.24,5.22,5.2,5.18,5.17,5.15,5.14,5.13,5.12,5.11,5.1,5.09,5.08,5.07,5.07],[8.07,6.54,5.89,5.52,5.29,5.12,4.99,4.9,4.82,4.76,4.71,4.67,4.63,4.6,4.57,4.54,4.52,4.5,4.48,4.47,4.45,4.44,4.43,4.41,4.4,4.39,4.39,4.38,4.37,4.36],[7.57,6.06,5.42,5.05,4.82,4.65,4.53,4.43,4.36,4.3,4.24,4.2,4.16,4.13,4.1,4.08,4.05,4.03,4.02,4.0,3.98,3.97,3.96,3.95,3.94,3.93,3.92,3.91,3.9,3.89],[7.21,5.71,5.08,4.72,4.48,4.32,4.2,4.1,4.03,3.96,3.91,3.87,3.83,3.8,3.77,3.74,3.72,3.7,3.68,3.67,3.65,3.64,3.63,3.61,3.6,3.59,3.58,3.58,3.57,3.56],[6.94,5.46,4.83,4.47,4.24,4.07,3.95,3.85,3.78,3.72,3.66,3.62,3.58,3.55,3.52,3.5,3.47,3.45,3.44,3.42,3.4,3.39,3.38,3.37,3.35,3.34,3.34,3.33,3.32,3.31],[6.72,5.26,4.63,4.28,4.04,3.88,3.76,3.66,3.59,3.53,3.47,3.43,3.39,3.36,3.33,3.3,3.28,3.26,3.24,3.23,3.21,3.2,3.18,3.17,3.16,3.15,3.14,3.13,3.13,3.12],[6.55,5.1,4.47,4.12,3.89,3.73,3.61,3.51,3.44,3.37,3.32,3.28,3.24,3.21,3.18,3.15,3.13,3.11,3.09,3.07,3.06,3.04,3.03,3.02,3.01,3.0,2.99,2.98,2.97,2.96],[6.41,4.97,4.35,4.0,3.77,3.6,3.48,3.39,3.31,3.25,3.2,3.15,3.12,3.08,3.05,3.03,3.0,2.98,2.96,2.95,2.93,2.92,2.91,2.89,2.88,2.87,2.86,2.85,2.85,2.84],[6.3,4.86,4.24,3.89,3.66,3.5,3.38,3.29,3.21,3.15,3.09,3.05,3.01,2.98,2.95,2.92,2.9,2.88,2.86,2.84,2.83,2.81,2.8,2.79,2.78,2.77,2.76,2.75,2.74,2.73],[6.2,4.77,4.15,3.8,3.58,3.41,3.29,3.2,3.12,3.06,3.01,2.96,2.92,2.89,2.86,2.84,2.81,2.79,2.77,2.76,2.74,2.73,2.71,2.7,2.69,2.68,2.67,2.66,2.65,2.64],[6.12,4.69,4.08,3.73,3.5,3.34,3.22,3.12,3.05,2.99,2.93,2.89,2.85,2.82,2.79,2.76,2.74,2.72,2.7,2.68,2.67,2.65,2.64,2.63,2.61,2.6,2.59,2.58,2.58,2.57],[6.04,4.62,4.01,3.66,3.44,3.28,3.16,3.06,2.98,2.92,2.87,2.82,2.79,2.75,2.72,2.7,2.67,2.65,2.63,2.62,2.6,2.59,2.57,2.56,2.55,2.54,2.53,2.52,2.51,2.5],[5.98,4.56,3.95,3.61,3.38,3.22,3.1,3.01,2.93,2.87,2.81,2.77,2.73,2.7,2.67,2.64,2.62,2.6,2.58,2.56,2.54,2.53,2.52,2.5,2.49,2.48,2.47,2.46,2.45,2.44],[5.92,4.51,3.9,3.56,3.33,3.17,3.05,2.96,2.88,2.82,2.76,2.72,2.68,2.65,2.62,2.59,2.57,2.55,2.53,2.51,2.49,2.48,2.46,2.45,2.44,2.43,2.42,2.41,2.4,2.39],[5.87,4.46,3.86,3.51,3.29,3.13,3.01,2.91,2.84,2.77,2.72,2.68,2.64,2.6,2.57,2.55,2.52,2.5,2.48,2.46,2.45,2.43,2.42,2.41,2.4,2.39,2.38,2.37,2.36,2.35],[5.83,4.42,3.82,3.48,3.25,3.09,2.97,2.87,2.8,2.73,2.68,2.64,2.6,2.56,2.53,2.51,2.48,2.46,2.44,2.42,2.41,2.39,2.38,2.37,2.36,2.34,2.33,2.33,2.32,2.31],[5.79,4.38,3.78,3.44,3.22,3.05,2.93,2.84,2.76,2.7,2.65,2.6,2.56,2.53,2.5,2.47,2.45,2.43,2.41,2.39,2.37,2.36,2.34,2.33,2.32,2.31,2.3,2.29,2.28,2.27],[5.75,4.35,3.75,3.41,3.18,3.02,2.9,2.81,2.73,2.67,2.62,2.57,2.53,2.5,2.47,2.44,2.42,2.39,2.37,2.36,2.34,2.33,2.31,2.3,2.29,2.28,2.27,2.26,2.25,2.24],[5.72,4.32,3.72,3.38,3.15,2.99,2.87,2.78,2.7,2.64,2.59,2.54,2.5,2.47,2.44,2.41,2.39,2.36,2.35,2.33,2.31,2.3,2.28,2.27,2.26,2.25,2.24,2.23,2.22,2.21],[5.69,4.29,3.69,3.35,3.13,2.97,2.85,2.75,2.68,2.61,2.56,2.51,2.48,2.44,2.41,2.38,2.36,2.34,2.32,2.3,2.28,2.27,2.26,2.24,2.23,2.22,2.21,2.2,2.19,2.18],[5.66,4.27,3.67,3.33,3.1,2.94,2.82,2.73,2.65,2.59,2.54,2.49,2.45,2.42,2.39,2.36,2.34,2.31,2.29,2.28,2.26,2.24,2.23,2.22,2.21,2.19,2.18,2.17,2.17,2.16],[5.63,4.24,3.65,3.31,3.08,2.92,2.8,2.71,2.63,2.57,2.51,2.47,2.43,2.39,2.36,2.34,2.31,2.29,2.27,2.25,2.24,2.22,2.21,2.19,2.18,2.17,2.16,2.15,2.14,2.13],[5.61,4.22,3.63,3.29,3.06,2.9,2.78,2.69,2.61,2.55,2.49,2.45,2.41,2.37,2.34,2.32,2.29,2.27,2.25,2.23,2.22,2.2,2.19,2.17,2.16,2.15,2.14,2.13,2.12,2.11],[5.59,4.2,3.61,3.27,3.04,2.88,2.76,2.67,2.59,2.53,2.48,2.43,2.39,2.36,2.32,2.3,2.27,2.25,2.23,2.21,2.2,2.18,2.17,2.15,2.14,2.13,2.12,2.11,2.1,2.09],[5.57,4.18,3.59,3.25,3.03,2.87,2.75,2.65,2.57,2.51,2.46,2.41,2.37,2.34,2.31,2.28,2.26,2.23,2.21,2.2,2.18,2.16,2.15,2.14,2.12,2.11,2.1,2.09,2.08,2.07]],[[4052.18,4999.5,5403.35,5624.58,5763.65,5858.99,5928.36,5981.07,6022.47,6055.85,6083.32,6106.32,6125.86,6142.67,6157.28,6170.1,6181.43,6191.53,6200.58,6208.73,6216.12,6222.84,6228.99,6234.63,6239.83,6244.62,6249.07,6253.2,6257.05,6260.65],[98.5,99.0,99.17,99.25,99.3,99.33,99.36,99.37,99.39,99.4,99.41,99.42,99.42,99.43,99.43,99.44,99.44,99.44,99.45,99.45,99.45,99.45,99.46,99.46,99.46,99.46,99.46,99.46,99.46,99.47],[34.12,30.82,29.46,28.71,28.24,27.91,27.67,27.49,27.35,27.23,27.13,27.05,26.98,26.92,26.87,26.83,26.79,26.75,26.72,26.69,26.66,26.64,26.62,26.6,26.58,26.56,26.55,26.53,26.52,26.5],[21.2,18.0,16.69,15.98,15.52,15.21,14.98,14.8,14.66,14.55,14.45,14.37,14.31,14.25,14.2,14.15,14.11,14.08,14.05,14.02,13.99,13.97,13.95,13.93,13.91,13.89,13.88,13.86,13.85,13.84],[16.26,13.27,12.06,11.39,10.97,10.67,10.46,10.29,10.16,10.05,9.96,9.89,9.82,9.77,9.72,9.68,9.64,9.61,9.58,9.55,9.53,9.51,9.49,9.47,9.45,9.43,9.42,9.4,9.39,9.38],[13.75,10.92,9.78,9.15,8.75,8.47,8.26,8.1,7.98,7.87,7.79,7.72,7.66,7.6,7.56,7.52,7.48,7.45,7.42,7.4,7.37,7.35,7.33,7.31,7.3,7.28,7.27,7.25,7.24,7.23],[12.25,9.55,8.45,7.85,7.46,7.19,6.99,6.84,6.72,6.62,6.54,6.47,6.41,6.36,6.31,6.28,6.24,6.21,6.18,6.16,6.13,6.11,6.09,6.07,6.06,6.04,6.03,6.02,6.0,5.99],[11.26,8.65,7.59,7.01,6.63,6.37,6.18,6.03,5.91,5.81,5.73,5.67,5.61,5.56,5.52,5.48,5.44,5.41,5.38,5.36,5.34,5.32,5.3,5.28,5.26,5.25,5.23,5.22,5.21,5.2],[10.56,8.02,6.99,6.42,6.06,5.8,5.61,5.47,5.35,5.26,5.18,5.11,5.05,5.01,4.96,4.92,4.89,4.86,4.83,4.81,4.79,4.77,4.75,4.73,4.71,4.7,4.68,4.67,4.66,4.65],[10.04,7.56,6.55,5.99,5.64,5.39,5.2,5.06,4.94,4.85,4.77,4.71,4.65,4.6,4.56,4.52,4.49,4.46,4.43,4.41,4.38,4.36,4.34,4.33,4.31,4.3,4.28,4.27,4.26,4.25],[9.65,7.21,6.22,5.67,5.32,5.07,4.89,4.74,4.63,4.54,4.46,4.4,4.34,4.29,4.25,4.21,4.18,4.15,4.12,4.1,4.08,4.06,4.04,4.02,4.01,3.99,3.98,3.96,3.95,3.94],[9.33,6.93,5.95,5.41,5.06,4.82,4.64,4.5,4.39,4.3,4.22,4.16,4.1,4.05,4.01,3.97,3.94,3.91,3.88,3.86,3.84,3.82,3.8,3.78,3.76,3.75,3.74,3.72,3.71,3.7],[9.07,6.7,5.74,5.21,4.86,4.62,4.44,4.3,4.19,4.1,4.02,3.96,3.91,3.86,3.82,3.78,3.75,3.72,3.69,3.66,3.64,3.62,3.6,3.59,3.57,3.56,3.54,3.53,3.52,3.51],[8.86,6.51,5.56,5.04,4.69,4.46,4.28,4.14,4.03,3.94,3.86,3.8,3.75,3.7,3.66,3.62,3.59,3.56,3.53,3.51,3.48,3.46,3.44,3.43,3.41,3.4,3.38,3.37,3.36,3.35],[8.68,6.36,5.42,4.89,4.56,4.32,4.14,4.0,3.89,3.8,3.73,3.67,3.61,3.56,3.52,3.49,3.45,3.42,3.4,3.37,3.35,3.33,3.31,3.29,3.28,3.26,3.25,3.24,3.23,3.21],[8.53,6.23,5.29,4.77,4.44,4.2,4.03,3.89,3.78,3.69,3.62,3.55,3.5,3.45,3.41,3.37,3.34,3.31,3.28,3.26,3.24,3.22,3.2,3.18,3.16,3.15,3.14,3.12,3.11,3.1],[8.4,6.11,5.18,4.67,4.34,4.1,3.93,3.79,3.68,3.59,3.52,3.46,3.4,3.35,3.31,3.27,3.24,3.21,3.19,3.16,3.14,3.12,3.1,3.08,3.07,3.05,3.04,3.03,3.01,3.0],[8.29,6.01,5.09,4.58,4.25,4.01,3.84,3.71,3.6,3.51,3.43,3.37,3.32,3.27,3.23,3.19,3.16,3.13,3.1,3.08,3.05,3.03,3.02,3.0,2.98,2.97,2.95,2.94,2.93,2.92],[8.18,5.93,5.01,4.5,4.17,3.94,3.77,3.63,3.52,3.43,3.36,3.3,3.24,3.19,3.15,3.12,3.08,3.05,3.03,3.0,2.98,2.96,2.94,2.92,2.91,2.89,2.88,2.87,2.86,2.84],[8.1,5.85,4.94,4.43,4.1,3.87,3.7,3.56,3.46,3.37,3.29,3.23,3.18,3.13,3.09,3.05,3.02,2.99,2.96,2.94,2.92,2.9,2.88,2.86,2.84,2.83,2.81,2.8,2.79,2.78],[8.02,5.78,4.87,4.37,4.04,3.81,3.64,3.51,3.4,3.31,3.24,3.17,3.12,3.07,3.03,2.99,2.96,2.93,2.9,2.88,2.86,2.84,2.82,2.8,2.79,2.77,2.76,2.74,2.73,2.72],[7.95,5.72,4.82,4.31,3.99,3.76,3.59,3.45,3.35,3.26,3.18,3.12,3.07,3.02,2.98,2.94,2.91,2.88,2.85,2.83,2.81,2.78,2.77,2.75,2.73,2.72,2.7,2.69,2.68,2.67],[7.88,5.66,4.76,4.26,3.94,3.71,3.54,3.41,3.3,3.21,3.14,3.07,3.02,2.97,2.93,2.89,2.86,2.83,2.8,2.78,2.76,2.74,2.72,2.7,2.69,2.67,2.66,2.64,2.63,2.62],[7.82,5.61,4.72,4.22,3.9,3.67,3.5,3.36,3.26,3.17,3.09,3.03,2.98,2.93,2.89,2.85,2.82,2.79,2.76,2.74,2.72,2.7,2.68,2.66,2.64,2.63,2.61,2.6,2.59,2.58],[7.77,5.57,4.68,4.18,3.85,3.63,3.46,3.32,3.22,3.13,3.06,2.99,2.94,2.89,2.85,2.81,2.78,2.75,2.72,2.7,2.68,2.66,2.64,2.62,2.6,2.59,2.58,2.56,2.55,2.54],[7.72,5.53,4.64,4.14,3.82,3.59,3.42,3.29,3.18,3.09,3.02,2.96,2.9,2.86,2.81,2.78,2.75,2.72,2.69,2.66,2.64,2.62,2.6,2.58,2.57,2.55,2.54,2.53,2.51,2.5],[7.68,5.49,4.6,4.11,3.78,3.56,3.39,3.26,3.15,3.06,2.99,2.93,2.87,2.82,2.78,2.75,2.71,2.68,2.66,2.63,2.61,2.59,2.57,2.55,2.54,2.52,2.51,2.49,2.48,2.47],[7.64,5.45,4.57,4.07,3.75,3.53,3.36,3.23,3.12,3.03,2.96,2.9,2.84,2.79,2.75,2.72,2.68,2.65,2.63,2.6,2.58,2.56,2.54,2.52,2.51,2.49,2.48,2.46,2.45,2.44],[7.6,5.42,4.54,4.04,3.73,3.5,3.33,3.2,3.09,3.0,2.93,2.87,2.81,2.77,2.73,2.69,2.66,2.63,2.6,2.57,2.55,2.53,2.51,2.49,2.48,2.46,2.45,2.44,2.42,2.41],[7.56,5.39,4.51,4.02,3.7,3.47,3.3,3.17,3.07,2.98,2.91,2.84,2.79,2.74,2.7,2.66,2.63,2.6,2.57,2.55,2.53,2.51,2.49,2.47,2.45,2.44,2.42,2.41,2.4,2.39]],[[16210.72,19999.5,21614.74,22499.58,23055.8,23437.11,23714.57,23925.41,24091.0,24224.49,24334.36,24426.37,24504.54,24571.77,24630.21,24681.47,24726.8,24767.17,24803.35,24835.97,24865.52,24892.42,24917.0,24939.57,24960.34,24979.53,24997.32,25013.85,25029.25,25043.63],[198.5,199.0,199.17,199.25,199.3,199.33,199.36,199.37,199.39,199.4,199.41,199.42,199.42,199.43,199.43,199.44,199.44,199.44,199.45,199.45,199.45,199.45,199.46,199.46,199.46,199.46,199.46,199.46,199.47,199.47],[55.55,49.8,47.47,46.19,45.39,44.84,44.43,44.13,43.88,43.69,43.52,43.39,43.27,43.17,43.08,43.01,42.94,42.88,42.83,42.78,42.73,42.69,42.66,42.62,42.59,42.56,42.54,42.51,42.49,42.47],[31.33,26.28,24.26,23.15,22.46,21.97,21.62,21.35,21.14,20.97,20.82,20.7,20.6,20.51,20.44,20.37,20.31,20.26,20.21,20.17,20.13,20.09,20.06,20.03,20.0,19.98,19.95,19.93,19.91,19.89],[22.78,18.31,16.53,15.56,14.94,14.51,14.2,13.96,13.77,13.62,13.49,13.38,13.29,13.21,13.15,13.09,13.03,12.98,12.94,12.9,12.87,12.84,12.81,12.78,12.76,12.73,12.71,12.69,12.67,12.66],[18.63,14.54,12.92,12.03,11.46,11.07,10.79,10.57,10.39,10.25,10.13,10.03,9.95,9.88,9.81,9.76,9.71,9.66,9.62,9.59,9.56,9.53,9.5,9.47,9.45,9.43,9.41,9.39,9.37,9.36],[16.24,12.4,10.88,10.05,9.52,9.16,8.89,8.68,8.51,8.38,8.27,8.18,8.1,8.03,7.97,7.91,7.87,7.83,7.79,7.75,7.72,7.69,7.67,7.64,7.62,7.6,7.58,7.57,7.55,7.53],[14.69,11.04,9.6,8.81,8.3,7.95,7.69,7.5,7.34,7.21,7.1,7.01,6.94,6.87,6.81,6.76,6.72,6.68,6.64,6.61,6.58,6.55,6.53,6.5,6.48,6.46,6.44,6.43,6.41,6.4],[13.61,10.11,8.72,7.96,7.47,7.13,6.88,6.69,6.54,6.42,6.31,6.23,6.15,6.09,6.03,5.98,5.94,5.9,5.86,5.83,5.8,5.78,5.75,5.73,5.71,5.69,5.67,5.65,5.64,5.62],[12.83,9.43,8.08,7.34,6.87,6.54,6.3,6.12,5.97,5.85,5.75,5.66,5.59,5.53,5.47,5.42,5.38,5.34,5.31,5.27,5.25,5.22,5.2,5.17,5.15,5.13,5.12,5.1,5.08,5.07],[12.23,8.91,7.6,6.88,6.42,6.1,5.86,5.68,5.54,5.42,5.32,5.24,5.16,5.1,5.05,5.0,4.96,4.92,4.89,4.86,4.83,4.8,4.78,4.76,4.74,4.72,4.7,4.68,4.67,4.65],[11.75,8.51,7.23,6.52,6.07,5.76,5.52,5.35,5.2,5.09,4.99,4.91,4.84,4.77,4.72,4.67,4.63,4.59,4.56,4.53,4.5,4.48,4.45,4.43,4.41,4.39,4.38,4.36,4.34,4.33],[11.37,8.19,6.93,6.23,5.79,5.48,5.25,5.08,4.94,4.82,4.72,4.64,4.57,4.51,4.46,4.41,4.37,4.33,4.3,4.27,4.24,4.22,4.19,4.17,4.15,4.13,4.12,4.1,4.09,4.07],[11.06,7.92,6.68,6.0,5.56,5.26,5.03,4.86,4.72,4.6,4.51,4.43,4.36,4.3,4.25,4.2,4.16,4.12,4.09,4.06,4.03,4.01,3.98,3.96,3.94,3.92,3.91,3.89,3.88,3.86],[10.8,7.7,6.48,5.8,5.37,5.07,4.85,4.67,4.54,4.42,4.33,4.25,4.18,4.12,4.07,4.02,3.98,3.95,3.91,3.88,3.86,3.83,3.81,3.79,3.77,3.75,3.73,3.72,3.7,3.69],[10.58,7.51,6.3,5.64,5.21,4.91,4.69,4.52,4.38,4.27,4.18,4.1,4.03,3.97,3.92,3.87,3.83,3.8,3.76,3.73,3.71,3.68,3.66,3.64,3.62,3.6,3.58,3.57,3.55,3.54],[10.38,7.35,6.16,5.5,5.07,4.78,4.56,4.39,4.25,4.14,4.05,3.97,3.9,3.84,3.79,3.75,3.71,3.67,3.64,3.61,3.58,3.56,3.53,3.51,3.49,3.47,3.46,3.44,3.43,3.41],[10.22,7.21,6.03,5.37,4.96,4.66,4.44,4.28,4.14,4.03,3.94,3.86,3.79,3.73,3.68,3.64,3.6,3.56,3.53,3.5,3.47,3.45,3.42,3.4,3.38,3.36,3.35,3.33,3.32,3.3],[10.07,7.09,5.92,5.27,4.85,4.56,4.34,4.18,4.04,3.93,3.84,3.76,3.7,3.64,3.59,3.54,3.5,3.46,3.43,3.4,3.37,3.35,3.33,3.31,3.29,3.27,3.25,3.24,3.22,3.21],[9.94,6.99,5.82,5.17,4.76,4.47,4.26,4.09,3.96,3.85,3.76,3.68,3.61,3.55,3.5,3.46,3.42,3.38,3.35,3.32,3.29,3.27,3.24,3.22,3.2,3.18,3.17,3.15,3.14,3.12],[9.83,6.89,5.73,5.09,4.68,4.39,4.18,4.01,3.88,3.77,3.68,3.6,3.54,3.48,3.43,3.38,3.34,3.31,3.27,3.24,3.22,3.19,3.17,3.15,3.13,3.11,3.09,3.08,3.06,3.05],[9.73,6.81,5.65,5.02,4.61,4.32,4.11,3.94,3.81,3.7,3.61,3.54,3.47,3.41,3.36,3.31,3.27,3.24,3.21,3.18,3.15,3.12,3.1,3.08,3.06,3.04,3.03,3.01,3.0,2.98],[9.63,6.73,5.58,4.95,4.54,4.26,4.05,3.88,3.75,3.64,3.55,3.47,3.41,3.35,3.3,3.25,3.21,3.18,3.15,3.12,3.09,3.06,3.04,3.02,3.0,2.98,2.97,2.95,2.94,2.92],[9.55,6.66,5.52,4.89,4.49,4.2,3.99,3.83,3.69,3.59,3.5,3.42,3.35,3.3,3.25,3.2,3.16,3.12,3.09,3.06,3.04,3.01,2.99,2.97,2.95,2.93,2.91,2.9,2.88,2.87],[9.48,6.6,5.46,4.84,4.43,4.15,3.94,3.78,3.64,3.54,3.45,3.37,3.3,3.25,3.2,3.15,3.11,3.08,3.04,3.01,2.99,2.96,2.94,2.92,2.9,2.88,2.86,2.85,2.83,2.82],[9.41,6.54,5.41,4.79,4.38,4.1,3.89,3.73,3.6,3.49,3.4,3.33,3.26,3.2,3.15,3.11,3.07,3.03,3.0,2.97,2.94,2.92,2.89,2.87,2.85,2.84,2.82,2.8,2.79,2.77],[9.34,6.49,5.36,4.74,4.34,4.06,3.85,3.69,3.56,3.45,3.36,3.28,3.22,3.16,3.11,3.07,3.03,2.99,2.96,2.93,2.9,2.88,2.85,2.83,2.81,2.79,2.78,2.76,2.75,2.73],[9.28,6.44,5.32,4.7,4.3,4.02,3.81,3.65,3.52,3.41,3.32,3.25,3.18,3.12,3.07,3.03,2.99,2.95,2.92,2.89,2.86,2.84,2.82,2.79,2.77,2.76,2.74,2.72,2.71,2.69],[9.23,6.4,5.28,4.66,4.26,3.98,3.77,3.61,3.48,3.38,3.29,3.21,3.15,3.09,3.04,2.99,2.95,2.92,2.88,2.86,2.83,2.8,2.78,2.76,2.74,2.72,2.7,2.69,2.67,2.66],[9.18,6.35,5.24,4.62,4.23,3.95,3.74,3.58,3.45,3.34,3.25,3.18,3.11,3.06,3.01,2.96,2.92,2.89,2.85,2.82,2.8,2.77,2.75,2.73,2.71,2.69,2.67,2.66,2.64,2.63]]]};
+
+
+  function Phi(z) {
+    var a = Math.round(Math.abs(z) * 100 + 1e-9);
+    if (a > 399) a = 399;
+    return (z < 0 ? ZT.neg : ZT.pos)[Math.floor(a / 10)][a % 10] / 1e5;
+  }
+  /* z (en centésimas) cuya fila de tabla queda más cerca de un área dada */
+  function zCerca(area) {
+    var best = null, bd = 1e9, sd = 1e9;
+    for (var i = -399; i <= 399; i++) {
+      var d = Math.abs(Phi(i / 100) - area);
+      if (d < bd) { sd = bd; bd = d; best = i; } else if (d < sd) sd = d;
+    }
+    return { k: best, z: best / 100, d: bd, gap: sd - bd };
+  }
+  /* redondeo de z a 2 decimales como en la ppt (−0.5102 → −0.51) */
+  function zr(z) { return (z < 0 ? -1 : 1) * Math.round(Math.abs(z) * 100 + 1e-9) / 100; }
+  var ambiguo = function (z) { return Math.abs((Math.abs(z) * 100) % 1 - 0.5) < 0.07; };
+  function tval(df, p) { return TT.v[TT.df.indexOf(df)][TT.p.indexOf(p)]; }
+
+  /* ---------------- niveles de confianza ---------------- */
+  var CONFZ = [92, 94, 95, 96, 98];      /* z de la tabla sin ambigüedad */
+  var CONFT = [90, 95, 98, 99];          /* columnas de las tablas t y χ² */
+  function zConf(conf) { return zCerca(1 - (1 - conf / 100) / 2).z; }
+  var up = function (x) { return Math.ceil(x - 1e-9); };
+
+  /* ---------------- gráficos SVG ----------------
+     Campana normal estándar con regiones sombreadas. Todo se dibuja en unidades z;
+     las marcas y las etiquetas del eje pueden mostrar valores de X. */
+  var pdf = function (z) { return Math.exp(-z * z / 2) / Math.sqrt(2 * Math.PI); };
+  function curva(o) {
+    o = o || {};
+    var W = 560, H = 178, izq = 14, der = 14, arr = 12, abj = 50, zmin = -3.5, zmax = 3.5;
+    var X = function (z) { return izq + (z - zmin) / (zmax - zmin) * (W - izq - der); };
+    var Y = function (z) { return H - abj - (H - abj - arr) * pdf(z) / 0.4; };
+    var base = H - abj, s = '<svg viewBox="0 0 ' + W + " " + H + '" class="cv" role="img" aria-label="Campana normal">', z;
+    (o.regs || []).forEach(function (r) {
+      var a = Math.max(zmin, r.a), b = Math.min(zmax, r.b), d = "M" + X(a).toFixed(1) + " " + base;
+      for (z = a; z < b - 1e-9; z += 0.05) d += " L" + X(z).toFixed(1) + " " + Y(z).toFixed(1);
+      d += " L" + X(b).toFixed(1) + " " + Y(b).toFixed(1) + " L" + X(b).toFixed(1) + " " + base + " Z";
+      s += '<path class="cv-' + (r.cls || "on") + '" d="' + d + '"></path>';
+    });
+    var c = "M" + X(zmin).toFixed(1) + " " + Y(zmin).toFixed(1);
+    for (z = zmin + 0.05; z <= zmax + 1e-9; z += 0.05) c += " L" + X(z).toFixed(1) + " " + Y(z).toFixed(1);
+    s += '<path class="cv-line" d="' + c + '"></path>';
+    s += '<line class="cv-ax" x1="' + izq + '" y1="' + base + '" x2="' + (W - der) + '" y2="' + base + '"></line>';
+    (o.ticks || [-3, -2, -1, 0, 1, 2, 3].map(function (t) { return { z: t, l: String(t).replace("-", "−") }; })).forEach(function (t) {
+      s += '<line class="cv-ax" x1="' + X(t.z).toFixed(1) + '" y1="' + base + '" x2="' + X(t.z).toFixed(1) + '" y2="' + (base + 4) + '"></line>' +
+           '<text class="cv-tx" x="' + X(t.z).toFixed(1) + '" y="' + (base + 17) + '">' + esc(t.l) + "</text>";
+    });
+    (o.marks || []).forEach(function (m, i) {
+      s += '<line class="cv-mk" x1="' + X(m.z).toFixed(1) + '" y1="' + base + '" x2="' + X(m.z).toFixed(1) + '" y2="' + Y(m.z).toFixed(1) + '"></line>' +
+           '<text class="cv-mt" style="text-anchor:' + (m.z > 0.8 ? "end" : m.z < -0.8 ? "start" : "middle") + '" x="' + X(m.z).toFixed(1) + '" y="' + (base + 34 + (i % 2) * 0) + '">' + esc(m.l) + "</text>";
+    });
+    return s + "</svg>";
+  }
+  function leyenda(on, off) {
+    return '<div class="leyenda">' + (on ? '<span><i style="background:var(--accent)"></i>' + esc(on) + "</span>" : "") +
+      (off ? '<span><i style="background:var(--amber)"></i>' + esc(off) + "</span>" : "") + "</div>";
+  }
+  function cajaCurva(id, o, cap, on, off) {
+    return '<div class="barbox" id="' + id + '">' + curva(o) + (on || off ? leyenda(on, off) : "") +
+      (cap ? '<p class="figcap">' + esc(cap) + "</p>" : "") + "</div>";
+  }
+  /* ticks con los valores reales de X: μ−3σ … μ+3σ */
+  function ticksX(mu, sd, dec) {
+    var t = [];
+    for (var i = -3; i <= 3; i++) t.push({ z: i, l: fd(mu + i * sd, dec) });
+    return t;
+  }
+  /* ---------------- fragmentos de las tablas ---------------- */
+  /* tabla Z completa (para el panel «Tablas») */
+  function tablaZHTML() {
+    var h = '<table class="zt"><thead><tr><th>z</th>', c, r;
+    for (c = 0; c < 10; c++) h += "<th>" + c + "</th>";
+    h += "</tr></thead><tbody>";
+    for (r = 39; r >= 0; r--) {
+      h += "<tr><th>−" + (r / 10).toFixed(1) + "</th>";
+      for (c = 0; c < 10; c++) h += "<td>" + (ZT.neg[r][c] / 1e5).toFixed(5) + "</td>";
+      h += "</tr>";
+    }
+    h += '<tr class="sep"><td colspan="11"></td></tr>';
+    for (r = 0; r < 40; r++) {
+      h += "<tr><th>" + (r / 10).toFixed(1) + "</th>";
+      for (c = 0; c < 10; c++) h += "<td>" + (ZT.pos[r][c] / 1e5).toFixed(5) + "</td>";
+      h += "</tr>";
+    }
+    return h + "</tbody></table>";
+  }
+  function tablaTHTML() {
+    var h = '<table class="zt tt"><thead><tr><th>r \\ P(T ≤ t)</th>';
+    TT.p.forEach(function (p) { h += "<th>" + p + "</th>"; });
+    h += "</tr></thead><tbody>";
+    TT.df.forEach(function (d, i) {
+      h += "<tr><th>" + d + "</th>";
+      TT.v[i].forEach(function (v) { h += "<td>" + v.toFixed(3) + "</td>"; });
+      h += "</tr>";
+    });
+    return h + "</tbody></table>";
+  }
+  /* extracto de la tabla Z con la celda leída resaltada: ks = [centésimas, …] */
+  function miniZ(ks) {
+    var h = '<div class="minis"><p class="minicap">Así se lee en la tabla (celda resaltada):</p>';
+    ks.forEach(function (k) {
+      var a = Math.min(399, Math.abs(k)), r = Math.floor(a / 10), c = a % 10, ng = k < 0;
+      h += '<table class="zt mini"><thead><tr><th>z</th>';
+      for (var j = 0; j < 10; j++) h += "<th" + (j === c ? ' class="hl"' : "") + ">" + j + "</th>";
+      h += "</tr></thead><tbody><tr><th class=\"hl\">" + (ng ? "−" : "") + (r / 10).toFixed(1) + "</th>";
+      for (j = 0; j < 10; j++) h += "<td" + (j === c ? ' class="hl"' : "") + ">" + ((ng ? ZT.neg : ZT.pos)[r][j] / 1e5).toFixed(5) + "</td>";
+      h += "</tr></tbody></table>";
+    });
+    return h + "</div>";
+  }
+  function miniT(df, p) {
+    var i = TT.df.indexOf(df), j = TT.p.indexOf(p), h = '<div class="minis"><p class="minicap">Así se lee en la tabla t (celda resaltada), r = ' + df + ':</p><table class="zt mini tt"><thead><tr><th>r</th>';
+    TT.p.forEach(function (q, jj) { h += "<th" + (jj === j ? ' class="hl"' : "") + ">" + q + "</th>"; });
+    h += "</tr></thead><tbody>";
+    [i - 1, i, i + 1].forEach(function (ii) {
+      if (ii < 0 || ii >= TT.df.length) return;
+      h += "<tr><th" + (ii === i ? ' class="hl"' : "") + ">" + TT.df[ii] + "</th>";
+      TT.v[ii].forEach(function (v, jj) { h += "<td" + (ii === i && jj === j ? ' class="hl"' : "") + ">" + v.toFixed(3) + "</td>"; });
+      h += "</tr>";
+    });
+    return h + "</tbody></table></div>";
+  }
+
+  /* ---------------- F de Fisher: F(α ; ν1 , ν2), área α a la DERECHA ---------------- */
+  function fval(al, d1, d2) { return FT.v[FT.a.indexOf(al)][d2 - 1][d1 - 1]; }
+  var fSel = 0.025;
+  function tablaFHTML(al) {
+    var k = FT.a.indexOf(al), n = FT.n, h = '<table class="zt tt ft"><thead><tr><th>ν₂ \\ ν₁</th>', c, r;
+    for (c = 1; c <= n; c++) h += "<th>" + c + "</th>";
+    h += "</tr></thead><tbody>";
+    for (r = 1; r <= n; r++) {
+      h += "<tr><th>" + r + "</th>";
+      for (c = 1; c <= n; c++) h += "<td>" + FT.v[k][r - 1][c - 1].toFixed(2) + "</td>";
+      h += "</tr>";
+    }
+    return h + "</tbody></table>";
+  }
+  /* extracto de la tabla F con la celda leída resaltada */
+  function miniF(al, d1, d2) {
+    var k = FT.a.indexOf(al), cols = [], rows = [], j, i;
+    for (j = d1 - 2; j <= d1 + 2; j++) if (j >= 1 && j <= FT.n) cols.push(j);
+    for (i = d2 - 1; i <= d2 + 1; i++) if (i >= 1 && i <= FT.n) rows.push(i);
+    var h = '<table class="zt mini tt ft"><thead><tr><th>ν₂ \\ ν₁</th>';
+    cols.forEach(function (c) { h += "<th" + (c === d1 ? ' class="hl"' : "") + ">" + c + "</th>"; });
+    h += "</tr></thead><tbody>";
+    rows.forEach(function (r) {
+      h += "<tr><th" + (r === d2 ? ' class="hl"' : "") + ">" + r + "</th>";
+      cols.forEach(function (c) { h += "<td" + (r === d2 && c === d1 ? ' class="hl"' : "") + ">" + FT.v[k][r - 1][c - 1].toFixed(2) + "</td>"; });
+      h += "</tr>";
+    });
+    return h + "</tbody></table>";
+  }
+  /* dos lecturas de la F, una al lado de la otra: [[α, ν1, ν2], …] */
+  function minisF(lista) {
+    var h = '<div class="minis"><p class="minicap">Así se lee en la tabla F (celda resaltada: columna ν₁ = grados de libertad del numerador, fila ν₂ = del denominador):</p>';
+    lista.forEach(function (q) {
+      h += '<p class="minicap" style="margin:8px 0 2px"><b>F(' + q[0] + " ; " + q[1] + " , " + q[2] + ")</b> — tabla con área a la derecha α/2 = " + q[0] + "</p>" + miniF(q[0], q[1], q[2]);
+    });
+    return h + "</div>";
+  }
+  /* densidad F y curva con la cola derecha sombreada */
+  function lgam(x) {
+    var c = [76.18009172947146, -86.50532032941677, 24.01409824083091, -1.231739572450155, 0.1208650973866179e-2, -0.5395239384953e-5], y = x, t = x + 5.5, s2 = 1.000000000190015;
+    t -= (x + 0.5) * Math.log(t);
+    for (var j = 0; j < 6; j++) s2 += c[j] / ++y;
+    return -t + Math.log(2.5066282746310005 * s2 / x);
+  }
+  function pdfF(x, a, b) {
+    if (x <= 0) return 0;
+    return Math.exp(lgam((a + b) / 2) - lgam(a / 2) - lgam(b / 2) + (a / 2) * Math.log(a / b) + (a / 2 - 1) * Math.log(x) - ((a + b) / 2) * Math.log(1 + a * x / b));
+  }
+  function curvaF(o) {
+    var W = 560, H = 178, izq = 14, der = 14, arr = 14, abj = 46, a = o.a, b = o.b, fc = o.fc;
+    var xmax = Math.max(fc * 1.3, 3), pk = 0, x, i;
+    for (x = 0.05; x <= xmax; x += 0.02) pk = Math.max(pk, pdfF(x, a, b));
+    var X = function (v) { return izq + v / xmax * (W - izq - der); };
+    var Y = function (v) { return H - abj - (H - abj - arr) * Math.min(pdfF(v, a, b) / pk, 1); };
+    var base = H - abj, s = '<svg viewBox="0 0 ' + W + " " + H + '" class="cv" role="img" aria-label="Distribución F de Fisher">';
+    var d = "M" + X(fc).toFixed(1) + " " + base;
+    for (x = fc; x < xmax - 1e-9; x += 0.02) d += " L" + X(x).toFixed(1) + " " + Y(x).toFixed(1);
+    d += " L" + X(xmax).toFixed(1) + " " + Y(xmax).toFixed(1) + " L" + X(xmax).toFixed(1) + " " + base + " Z";
+    s += '<path class="cv-off" d="' + d + '"></path>';
+    var c = "M" + X(0.05).toFixed(1) + " " + Y(0.05).toFixed(1);
+    for (x = 0.07; x <= xmax + 1e-9; x += 0.02) c += " L" + X(x).toFixed(1) + " " + Y(x).toFixed(1);
+    s += '<path class="cv-line" d="' + c + '"></path><line class="cv-ax" x1="' + izq + '" y1="' + base + '" x2="' + (W - der) + '" y2="' + base + '"></line>';
+    for (i = 0; i <= Math.floor(xmax); i++) {
+      s += '<line class="cv-ax" x1="' + X(i).toFixed(1) + '" y1="' + base + '" x2="' + X(i).toFixed(1) + '" y2="' + (base + 4) + '"></line><text class="cv-tx" x="' + X(i).toFixed(1) + '" y="' + (base + 17) + '">' + i + "</text>";
+    }
+    s += '<line class="cv-mk" x1="' + X(fc).toFixed(1) + '" y1="' + base + '" x2="' + X(fc).toFixed(1) + '" y2="' + (Y(fc) - 10).toFixed(1) + '"></line>' +
+         '<text class="cv-mt" style="text-anchor:middle" x="' + X(fc).toFixed(1) + '" y="' + (base + 34) + '">' + esc(o.l) + "</text>";
+    return s + "</svg>";
+  }
+  function cajaF(id, o, cap) {
+    return '<div class="barbox" id="' + id + '">' + curvaF(o) + '<div class="leyenda"><span><i style="background:var(--amber)"></i>cola derecha α/2</span></div>' +
+      (cap ? '<p class="figcap">' + esc(cap) + "</p>" : "") + "</div>";
+  }
+
+  /* ---------------- gráfico del intervalo sobre una recta numérica ----------------
+     o: { L, U, m (estimador puntual), c (valor del enunciado, opcional), dec, name } */
+  function barraIC(o) {
+    var W = 400, H = 142, izq = 16, der = 16, y0 = 88;
+    var a = o.L, b = o.U, w = b - a, lo = a - 0.55 * w, hi = b + 0.55 * w;
+    if (o.c != null) { lo = Math.min(lo, o.c - 0.15 * w); hi = Math.max(hi, o.c + 0.15 * w); }
+    var X = function (v) { return izq + (v - lo) / (hi - lo) * (W - izq - der); };
+    var d = o.dec, s = '<svg viewBox="0 0 ' + W + " " + H + '" class="cv ic" role="img" aria-label="Intervalo de confianza">';
+    s += '<line class="cv-ax" x1="' + izq + '" y1="' + y0 + '" x2="' + (W - der) + '" y2="' + y0 + '"></line>';
+    s += '<rect class="cv-on" x="' + X(a).toFixed(1) + '" y="' + (y0 - 16) + '" width="' + (X(b) - X(a)).toFixed(1) + '" height="32" rx="4"></rect>';
+    [a, b].forEach(function (v, i) {
+      s += '<line class="cv-mk" style="stroke-dasharray:none;stroke-width:2" x1="' + X(v).toFixed(1) + '" y1="' + (y0 - 20) + '" x2="' + X(v).toFixed(1) + '" y2="' + (y0 + 20) + '"></line>' +
+           '<text class="cv-mt" x="' + X(v).toFixed(1) + '" y="' + (y0 + 40) + '">' + (i ? "U = " : "L = ") + fd(v, d) + "</text>";
+    });
+    if (o.m != null) {
+      s += '<circle cx="' + X(o.m).toFixed(1) + '" cy="' + y0 + '" r="6" style="fill:var(--ink);stroke:var(--surface);stroke-width:2"></circle>' +
+           '<text class="cv-tx" x="' + X(o.m).toFixed(1) + '" y="' + (y0 - 26) + '">' + esc(o.name || "estimación") + " = " + fd(o.m, d) + "</text>";
+    }
+    if (o.c != null) {
+      var inside = o.c >= a && o.c <= b, xc = X(o.c);
+      s += '<line x1="' + xc.toFixed(1) + '" y1="' + (y0 - 42) + '" x2="' + xc.toFixed(1) + '" y2="' + (y0 + 20) + '" style="stroke:var(--amber);stroke-width:2.5;stroke-dasharray:5 4"></line>' +
+           '<text class="cv-tx" style="fill:var(--amber);font-weight:600;text-anchor:' + (xc > W / 2 ? "end" : "start") + '" x="' + (xc + (xc > W / 2 ? -6 : 6)).toFixed(1) + '" y="' + (y0 - 48) + '">' + (o.cname || "enunciado") + " = " + fd(o.c, d) + (inside ? " (dentro)" : " (fuera)") + "</text>";
+    }
+    return s + "</svg>";
+  }
+  function cajaIC(id, o, cap) {
+    return '<div class="barbox" id="' + id + '">' + barraIC(o) + (cap ? '<p class="figcap">' + esc(cap) + "</p>" : "") + "</div>";
+  }
+
+  /* =====================================================================
+     ESCENARIOS · cada uno trae frases completas para que la concordancia sea siempre correcta
+     p1 / p2: lo que sigue al número de la muestra ("pedidos del aplicativo A");  w1 / w2: cómo llamar a cada grupo
+     ===================================================================== */
+  /* ---- σ desconocidas: cociente de varianzas y diferencia de medias (pasos 2 y 4) ---- */
+  var DIF = [
+    { tag: "Delivery", title: "Entregas de dos aplicativos de reparto",
+      ctx: "En 2026, dos aplicativos de reparto de Lima compiten por la rapidez de sus entregas.",
+      p1: "pedidos del aplicativo A", p2: "pedidos del aplicativo B", w1: "el aplicativo A", w2: "el aplicativo B",
+      vv: "el tiempo de entrega", u: "minutos", m: [26, 29, 32, 35, 38], dp: 1, s: [3, 3.5, 4, 5, 6, 7],
+      fuente: "Paneles de logística de dos aplicativos de reparto (datos simulados con fines didácticos)" },
+    { tag: "Autos eléctricos", title: "Carga rápida en dos electrolineras",
+      ctx: "En 2026, dos electrolineras de Lima ofrecen carga rápida para autos eléctricos.",
+      p1: "cargas de la electrolinera A", p2: "cargas de la electrolinera B", w1: "la electrolinera A", w2: "la electrolinera B",
+      vv: "el tiempo de carga", u: "minutos", m: [24, 27, 30, 34, 38], dp: 1, s: [3, 4, 5, 6, 8],
+      fuente: "Registros de dos electrolineras (datos simulados con fines didácticos)" },
+    { tag: "Tecnología", title: "Batería de dos modelos de laptop",
+      ctx: "Un laboratorio de tecnología compara en 2026 la batería de dos modelos de laptop para estudiantes.",
+      p1: "equipos del modelo X", p2: "equipos del modelo Y", w1: "el modelo X", w2: "el modelo Y",
+      vv: "la duración de la batería", u: "horas", m: [8.5, 9.5, 10.5, 11.5, 12.5], dp: 1, s: [0.6, 0.8, 1, 1.2, 1.5],
+      fuente: "Prueba de un laboratorio de tecnología (datos simulados con fines didácticos)" },
+    { tag: "Telecomunicaciones", title: "Velocidad de internet fijo de dos operadoras",
+      ctx: "En 2026, un organismo supervisor mide la velocidad real de descarga de internet fijo de dos operadoras en Lima.",
+      p1: "mediciones de la operadora A", p2: "mediciones de la operadora B", w1: "la operadora A", w2: "la operadora B",
+      vv: "la velocidad de descarga", u: "Mbps", m: [180, 210, 240, 270, 300], dp: 0, s: [15, 20, 25, 30, 40],
+      fuente: "Mediciones de un organismo supervisor (datos simulados con fines didácticos)" },
+    { tag: "IA en la universidad", title: "Uso de IA generativa en dos facultades",
+      ctx: "Una encuesta universitaria de 2026 compara el uso de IA generativa entre estudiantes de dos facultades.",
+      p1: "estudiantes de la facultad de Ingeniería", p2: "estudiantes de la facultad de Negocios", w1: "la facultad de Ingeniería", w2: "la facultad de Negocios",
+      vv: "el tiempo semanal de uso de IA generativa", u: "horas", m: [5, 6, 7, 8, 9, 10], dp: 1, s: [1.2, 1.5, 1.8, 2.2, 2.6],
+      fuente: "Encuesta de hábitos de estudio universitario (datos simulados con fines didácticos)" },
+    { tag: "Energía solar", title: "Paneles solares en dos ciudades",
+      ctx: "En 2026, una empresa instaladora compara la generación de energía de paneles solares en dos ciudades.",
+      p1: "hogares de Arequipa", p2: "hogares de Lima", w1: "Arequipa", w2: "Lima",
+      vv: "la producción diaria de energía", u: "kWh", m: [14, 16, 18, 20, 22], dp: 1, s: [1.5, 2, 2.5, 3, 3.5],
+      fuente: "Reporte de una empresa instaladora (datos simulados con fines didácticos)" },
+    { tag: "Trabajo híbrido", title: "Traslado al trabajo en dos modalidades",
+      ctx: "En 2026, una consultora laboral compara el tiempo de traslado al trabajo en Lima según la modalidad de trabajo.",
+      p1: "trabajadores en modalidad presencial", p2: "trabajadores en modalidad híbrida", w1: "la modalidad presencial", w2: "la modalidad híbrida",
+      vv: "el tiempo diario de traslado", u: "minutos", m: [55, 65, 75, 85, 95], dp: 1, s: [8, 10, 12, 15, 18],
+      fuente: "Encuesta de una consultora laboral (datos simulados con fines didácticos)" },
+    { tag: "Streaming", title: "Video corto en dos grupos de edad",
+      ctx: "En 2026, una plataforma de video corto compara el uso diario de dos grupos de edad.",
+      p1: "usuarios de 18 a 24 años", p2: "usuarios de 25 a 34 años", w1: "el grupo de 18 a 24 años", w2: "el grupo de 25 a 34 años",
+      vv: "el tiempo diario de uso", u: "minutos", m: [70, 85, 100, 115, 130], dp: 1, s: [15, 18, 22, 26, 30],
+      fuente: "Estudio de consumo digital de una plataforma (datos simulados con fines didácticos)" },
+    { tag: "Ciberseguridad", title: "Detección de incidentes en dos equipos de un SOC",
+      ctx: "En 2026, dos equipos de un centro de operaciones de seguridad (SOC) se comparan por su rapidez al detectar incidentes.",
+      p1: "incidentes atendidos por el equipo A", p2: "incidentes atendidos por el equipo B", w1: "el equipo A", w2: "el equipo B",
+      vv: "el tiempo de detección de un incidente", u: "horas", m: [4, 5, 6, 7, 8.5], dp: 1, s: [0.8, 1, 1.3, 1.6, 2],
+      fuente: "Informe de un centro de operaciones de seguridad (datos simulados con fines didácticos)" },
+    { tag: "Agroexportación", title: "Rendimiento de arándanos en dos fundos",
+      ctx: "En 2026, una agroexportadora compara el rendimiento de arándanos en dos fundos de La Libertad.",
+      p1: "parcelas del fundo A", p2: "parcelas del fundo B", w1: "el fundo A", w2: "el fundo B",
+      vv: "el rendimiento por hectárea", u: "toneladas", m: [12, 14, 16, 18, 20], dp: 1, s: [1.5, 2, 2.5, 3, 3.5],
+      fuente: "Registro de producción de una agroexportadora (datos simulados con fines didácticos)" }
+  ];
+
+  /* ---- σ conocidas: diferencia de medias con z (pasos 3 y 7) ---- */
+  var KZ = [
+    { tag: "Telecomunicaciones", title: "Consumo de datos de dos operadoras",
+      ctx: "En 2026, dos operadoras móviles comparan el consumo de datos de sus usuarios con plan pospago.",
+      p1: "usuarios de la operadora A", p2: "usuarios de la operadora B", w1: "la operadora A", w2: "la operadora B",
+      vv: "el consumo mensual de datos", u: "GB", m: [12, 14, 16, 18, 20], dp: 1, sd: [3, 3.5, 4, 4.5],
+      fuente: "Reportes de consumo de dos operadoras móviles (datos simulados con fines didácticos)" },
+    { tag: "Autos eléctricos", title: "Autonomía de dos modelos de auto eléctrico",
+      ctx: "En 2026, una agencia compara la autonomía de dos modelos de autos eléctricos que se venden en Lima.",
+      p1: "autos del modelo A", p2: "autos del modelo B", w1: "el modelo A", w2: "el modelo B",
+      vv: "la autonomía", u: "km", m: [340, 370, 400, 430, 460], dp: 1, sd: [20, 25, 30, 35],
+      fuente: "Prueba de autonomía de una agencia de movilidad (datos simulados con fines didácticos)" },
+    { tag: "Inteligencia artificial", title: "Respuesta de dos asistentes de IA",
+      ctx: "En 2026, una empresa prueba dos asistentes de inteligencia artificial para atención al cliente.",
+      p1: "consultas atendidas por el asistente A", p2: "consultas atendidas por el asistente B", w1: "el asistente A", w2: "el asistente B",
+      vv: "el tiempo de respuesta", u: "milisegundos", m: [850, 950, 1050, 1150], dp: 1, sd: [90, 110, 130, 150],
+      fuente: "Monitoreo de una plataforma de atención (datos simulados con fines didácticos)" },
+    { tag: "Energía solar", title: "Producción de dos marcas de paneles solares",
+      ctx: "En 2026, una empresa instaladora compara dos marcas de paneles solares.",
+      p1: "hogares con paneles de la marca A", p2: "hogares con paneles de la marca B", w1: "la marca A", w2: "la marca B",
+      vv: "la producción diaria de energía", u: "kWh", m: [16, 18, 20, 22, 24], dp: 1, sd: [2.5, 3, 3.5, 4],
+      fuente: "Reporte de una empresa instaladora (datos simulados con fines didácticos)" },
+    { tag: "Energía en el hogar", title: "Consumo eléctrico con y sin medidor inteligente",
+      ctx: "En 2026, una distribuidora eléctrica compara el consumo mensual de hogares con medidor inteligente y con medidor convencional.",
+      p1: "hogares con medidor inteligente", p2: "hogares con medidor convencional", w1: "los hogares con medidor inteligente", w2: "los hogares con medidor convencional",
+      vv: "el consumo mensual de energía", u: "kWh", m: [180, 210, 240, 270], dp: 1, sd: [25, 30, 35, 40],
+      fuente: "Reporte de una distribuidora eléctrica (datos simulados con fines didácticos)" },
+    { tag: "Comercio electrónico", title: "Carga de la página de pago en dos tipos de celular",
+      ctx: "En 2026, una tienda en línea compara el tiempo de carga de su página de pago según el tipo de celular del cliente.",
+      p1: "visitas desde celulares de gama alta", p2: "visitas desde celulares de gama básica", w1: "los celulares de gama alta", w2: "los celulares de gama básica",
+      vv: "el tiempo de carga", u: "milisegundos", m: [1400, 1700, 2000, 2300], dp: 1, sd: [180, 220, 260, 300],
+      fuente: "Métricas web de una tienda en línea (datos simulados con fines didácticos)" }
+  ];
+
+  /* ---- diferencia de proporciones (paso 5) ---- */
+  var PRO2 = [
+    { tag: "Pagos digitales", title: "Pagos con QR en mercados de dos ciudades",
+      ctx: "En 2026, una entidad financiera quiere ampliar los pagos digitales en los mercados.",
+      p1: "comerciantes de mercados de Lima", p2: "comerciantes de mercados de Arequipa", w1: "Lima", w2: "Arequipa",
+      pred: "aceptan pagos con código QR", fuente: "Encuesta de una entidad financiera (datos simulados con fines didácticos)" },
+    { tag: "Ciberseguridad", title: "Intentos de phishing según la edad",
+      ctx: "En 2026, una empresa de ciberseguridad analiza los intentos de fraude digital contra usuarios de banca por internet.",
+      p1: "usuarios menores de 30 años", p2: "usuarios de 30 años o más", w1: "los menores de 30 años", w2: "los de 30 años o más",
+      pred: "recibieron al menos un intento de phishing en el último mes", fuente: "Informe de una empresa de ciberseguridad (datos simulados con fines didácticos)" },
+    { tag: "Autos eléctricos", title: "Interés en autos eléctricos según el distrito",
+      ctx: "Una consultora estudia en 2026 la demanda de vehículos eléctricos en Lima.",
+      p1: "familias de un distrito de ingresos altos", p2: "familias de un distrito de ingresos medios", w1: "el distrito de ingresos altos", w2: "el distrito de ingresos medios",
+      pred: "consideran comprar un auto eléctrico en los próximos dos años", fuente: "Estudio de mercado de una consultora (datos simulados con fines didácticos)" },
+    { tag: "IA en la universidad", title: "Uso semanal de IA en dos facultades",
+      ctx: "Una universidad de Lima compara en 2026 el uso de IA generativa entre dos facultades.",
+      p1: "estudiantes de Ingeniería", p2: "estudiantes de Negocios", w1: "Ingeniería", w2: "Negocios",
+      pred: "usan IA generativa al menos una vez por semana", fuente: "Encuesta universitaria (datos simulados con fines didácticos)" },
+    { tag: "Trabajo híbrido", title: "Trabajo híbrido según el tamaño de la empresa",
+      ctx: "En 2026, una consultora laboral compara el trabajo híbrido según el tamaño de la empresa.",
+      p1: "profesionales de empresas grandes", p2: "profesionales de empresas pequeñas", w1: "las empresas grandes", w2: "las empresas pequeñas",
+      pred: "trabajan en modalidad híbrida", fuente: "Encuesta de una consultora laboral (datos simulados con fines didácticos)" },
+    { tag: "Compras en línea", title: "Recojo en tienda: Lima y provincias",
+      ctx: "Una cadena de tiendas compara en 2026 las preferencias de entrega de sus compradores en línea.",
+      p1: "compradores de Lima", p2: "compradores de provincias", w1: "Lima", w2: "provincias",
+      pred: "prefieren recoger su pedido en tienda", fuente: "Estudio de una cadena de tiendas (datos simulados con fines didácticos)" },
+    { tag: "Economía circular", title: "Reciclaje de residuos en dos distritos",
+      ctx: "En 2026, dos municipalidades evalúan su programa de segregación de residuos sólidos.",
+      p1: "hogares del distrito A", p2: "hogares del distrito B", w1: "el distrito A", w2: "el distrito B",
+      pred: "separan sus residuos para reciclar", fuente: "Encuesta municipal (datos simulados con fines didácticos)" },
+    { tag: "Banca digital", title: "Uso de la app bancaria por grupos de edad",
+      ctx: "En 2026, un banco compara el uso de su aplicación móvil entre dos grupos de edad.",
+      p1: "clientes de 18 a 35 años", p2: "clientes de 50 años o más", w1: "los clientes de 18 a 35 años", w2: "los clientes de 50 años o más",
+      pred: "realizan sus operaciones habituales desde la aplicación móvil", fuente: "Estudio de un banco (datos simulados con fines didácticos)" }
+  ];
+
+  /* =====================================================================
+     GENERADORES (validados: todo se calcula con las tablas del curso)
+     ===================================================================== */
+  var rd = function (x, d) { var m = Math.pow(10, d); return Math.round(x * m + 1e-9 * (x < 0 ? -1 : 1)) / m; };
+  var T_P = { 90: 0.95, 95: 0.975, 98: 0.99, 99: 0.995 };
+  var F_P = { 90: 0.05, 95: 0.025, 98: 0.01, 99: 0.005 };      /* área a la derecha α/2 en la tabla F */
+  var zAreaConf = function (conf) { return 1 - (1 - conf / 100) / 2; };
+  var fx = function (x) { return String(x); };
+  var sg = function (x) { return x < 0 ? -1 : 1; };
+
+  /* diferencia de medias con σ desconocidas: caso II (varianzas similares) o caso III (diferentes) */
+  function ciDifT(n1, x1, s1, n2, x2, s2, conf, caso) {
+    var v1 = s1 * s1, v2 = s2 * s2, r = {}, d = x1 - x2;
+    r.sp2 = ((n1 - 1) * v1 + (n2 - 1) * v2) / (n1 + n2 - 2);
+    r.eePool = Math.sqrt(r.sp2) * Math.sqrt(1 / n1 + 1 / n2);
+    r.eeW = Math.sqrt(v1 / n1 + v2 / n2);
+    r.g = Math.pow(v1 / n1 + v2 / n2, 2) / (Math.pow(v1 / n1, 2) / (n1 - 1) + Math.pow(v2 / n2, 2) / (n2 - 1));
+    r.gr = Math.round(r.g);
+    r.df = caso === 2 ? n1 + n2 - 2 : r.gr;
+    r.t = tval(r.df, T_P[conf]);
+    r.EE = caso === 2 ? r.eePool : r.eeW;
+    r.E = r.t * r.EE; r.d = d; r.L = d - r.E; r.U = d + r.E;
+    return r;
+  }
+  var estadoIC = function (L, U) { return L > 0 ? "pos" : (U < 0 ? "neg" : "cero"); };
+  /* ¿el intervalo tiene margen suficiente respecto al cero para que la conclusión sea clara? */
+  function margenOk(L, U, E, quiereCero) {
+    if (quiereCero) return L < 0 && U > 0 && Math.min(-L, U) >= 0.14 * E;
+    return (L > 0 && L >= 0.1 * E) || (U < 0 && -U >= 0.1 * E);
+  }
+
+  /* paso 2 y 4 · cociente de varianzas + diferencia de medias (σ desconocidas) con los mismos datos */
+  function construirD() {
+    for (var t = 0; t < 80000; t++) {
+      var sc = pick(DIF), n1 = ri(8, 15), n2 = ri(8, 15), conf = pick(CONFT), al = F_P[conf], homog = Math.random() < 0.5;
+      var s1 = pick(sc.s), f = homog ? pick([0.8, 0.9, 1, 1.1, 1.2, 1.3]) : pick([0.3, 0.35, 0.4, 2.2, 2.6, 3]);
+      var s2 = rd(s1 * f, sc.dp === 0 ? 0 : 2); if (s2 <= 0 || s2 === s1 && !homog) continue;
+      var ratio = s1 * s1 / (s2 * s2), Fa = fval(al, n1 - 1, n2 - 1), Fb = fval(al, n2 - 1, n1 - 1), Lr = ratio / Fa, Ur = ratio * Fb;
+      var contiene = Lr <= 1 && 1 <= Ur;
+      if (contiene !== homog) continue;
+      if (homog ? !(Lr <= 0.94 && Ur >= 1.06) : !(Lr >= 1.06 || Ur <= 0.94)) continue;
+      var caso = homog ? 2 : 3, base = ciDifT(n1, 0, s1, n2, 0, s2, conf, caso);
+      if (!homog && Math.abs(base.g - Math.floor(base.g) - 0.5) < 0.12) continue;
+      var quiereCero = Math.random() < 0.4, k = quiereCero ? pick([0.1, 0.25, 0.4, 0.55]) : pick([1.3, 1.7, 2.1, 2.6]);
+      var x1 = pick(sc.m), x2 = rd(x1 - sg(Math.random() - 0.5) * k * base.E, sc.dp);
+      if (x2 <= 0) continue;
+      var r = ciDifT(n1, x1, s1, n2, x2, s2, conf, caso);
+      if (!margenOk(r.L, r.U, r.E, quiereCero)) continue;
+      var alt = ciDifT(n1, x1, s1, n2, x2, s2, conf, homog ? 3 : 2);
+      if (Math.abs(alt.E - r.E) < 0.09) continue;
+      return { sc: sc, n1: n1, n2: n2, x1: x1, x2: x2, s1: s1, s2: s2, conf: conf, al: al, homog: homog, caso: caso, ratio: ratio, Fa: Fa, Fb: Fb, Lr: Lr, Ur: Ur,
+        da: n1 - 1, db: n2 - 1, df: r.df, g: r.g, gr: r.gr, t: r.t, EE: r.EE, E: r.E, d: r.d, L: r.L, U: r.U, sp2: r.sp2, eePool: r.eePool, eeW: r.eeW, alt: alt, estado: estadoIC(r.L, r.U),
+        tp: T_P[conf], area: zAreaConf(conf) };
+    }
+    return null;
+  }
+
+  /* paso 3 · diferencia de medias con σ conocidas (z) */
+  function construirK(evita) {
+    for (var t = 0; t < 80000; t++) {
+      var sc = pick(KZ); if (sc === evita) continue;
+      var n1 = pick([30, 36, 40, 45, 50, 64, 80]), n2 = pick([30, 36, 40, 45, 50, 64, 80]), sd1 = pick(sc.sd), sd2 = pick(sc.sd), conf = pick(CONFZ);
+      var zz = zCerca(zAreaConf(conf)); if (zz.gap < 0.00012) continue;
+      var EE = Math.sqrt(sd1 * sd1 / n1 + sd2 * sd2 / n2), E = zz.z * EE;
+      var quiereCero = Math.random() < 0.4, k = quiereCero ? pick([0.1, 0.25, 0.4, 0.55]) : pick([1.3, 1.7, 2.1, 2.6]);
+      var x1 = pick(sc.m), x2 = rd(x1 - sg(Math.random() - 0.5) * k * E, sc.dp);
+      if (x2 <= 0) continue;
+      var d = x1 - x2, L = d - E, U = d + E;
+      if (!margenOk(L, U, E, quiereCero)) continue;
+      return { sc: sc, n1: n1, n2: n2, sd1: sd1, sd2: sd2, x1: x1, x2: x2, conf: conf, z: zz.z, area: zAreaConf(conf), EE: EE, E: E, d: d, L: L, U: U, estado: estadoIC(L, U) };
+    }
+    return null;
+  }
+
+  /* paso 5 · diferencia de proporciones */
+  function construirP2() {
+    for (var t = 0; t < 80000; t++) {
+      var sc = pick(PRO2), N = [200, 250, 300, 400, 500], n1 = pick(N), n2 = pick(N), conf = pick(CONFZ);
+      var x1 = ri(Math.round(n1 * 0.12), Math.round(n1 * 0.7)), x2 = ri(Math.round(n2 * 0.12), Math.round(n2 * 0.7)), p1 = x1 / n1, p2 = x2 / n2;
+      if (Math.abs(p1 * 1000 - Math.round(p1 * 1000)) > 1e-9 || Math.abs(p2 * 1000 - Math.round(p2 * 1000)) > 1e-9) continue;
+      var zz = zCerca(zAreaConf(conf)); if (zz.gap < 0.00012) continue;
+      var EE = Math.sqrt(p1 * (1 - p1) / n1 + p2 * (1 - p2) / n2), E = zz.z * EE, d = p1 - p2, L = d - E, U = d + E;
+      var quiereCero = Math.random() < 0.45;
+      if (quiereCero ? !(L < 0 && U > 0 && Math.min(-L, U) >= 0.14 * E) : !((L > 0 && L >= 0.1 * E) || (U < 0 && -U >= 0.1 * E))) continue;
+      if (E < 0.03) continue;
+      return { sc: sc, n1: n1, n2: n2, x1: x1, x2: x2, p1: p1, p2: p2, conf: conf, z: zz.z, area: zAreaConf(conf), EE: EE, E: E, d: d, L: L, U: U, estado: estadoIC(L, U) };
+    }
+    return null;
+  }
+
+  /* paso 7 · problema inverso: del intervalo (σ conocidas) al nivel de confianza */
+  function construirI(evita) {
+    for (var t = 0; t < 80000; t++) {
+      var sc = pick(KZ); if (sc === evita) continue;
+      var n1 = pick([36, 40, 45, 50, 64, 80]), n2 = pick([36, 40, 45, 50, 64, 80]), sd1 = pick(sc.sd), sd2 = pick(sc.sd), conf = pick(CONFZ);
+      var zz = zCerca(zAreaConf(conf)); if (zz.gap < 0.00012) continue;
+      var EE = Math.sqrt(sd1 * sd1 / n1 + sd2 * sd2 / n2); if (EE < 0.8) continue;
+      var E0 = zz.z * EE, d = rd(pick(sc.m) - pick(sc.m) * pick([0.9, 0.95, 1.05, 1.1]), 2), L = rd(d - E0, 2), U = rd(d + E0, 2);
+      var E = (U - L) / 2, zrec = E / EE;
+      if (Math.abs(zrec - zz.z) > 0.0045) continue;
+      return { sc: sc, n1: n1, n2: n2, sd1: sd1, sd2: sd2, conf: conf, z: zz.z, area: zAreaConf(conf), EE: EE, E: E, d: (L + U) / 2, L: L, U: U };
+    }
+    return null;
+  }
+
+  /* paso 1 · elegir el intervalo correcto en tres situaciones */
+  var KIND = ["IC para μ₁ − μ₂ con σ conocidas (z)", "IC para μ₁ − μ₂ con σ desconocidas (t-Student)", "IC para π₁ − π₂ (z)", "IC para σ₁²/σ₂² (F de Fisher)"];
+  function construirSit() {
+    var kinds = shuffle([0, 1, 2, 3]).slice(0, 3), items = [], dec = function (x, d) { return fd(x, d); };
+    kinds.forEach(function (k) {
+      var sc, txt;
+      if (k === 0) {
+        sc = pick(KZ);
+        txt = sc.title + ": se comparan las medias de " + sc.vv + " entre " + sc.w1 + " y " + sc.w2 + ", con n₁ = " + pick([36, 40, 50, 64]) + " y n₂ = " + pick([40, 45, 50, 80]) +
+          "; las desviaciones estándar poblacionales σ₁ = " + fx(pick(sc.sd)) + " y σ₂ = " + fx(pick(sc.sd)) + " " + sc.u + " son conocidas.";
+      } else if (k === 1) {
+        sc = pick(DIF);
+        txt = sc.title + ": se comparan las medias de " + sc.vv + " entre " + sc.w1 + " y " + sc.w2 + ", con n₁ = " + ri(8, 15) + " y n₂ = " + ri(8, 15) +
+          "; no se conocen σ₁ ni σ₂, solo las desviaciones muestrales s₁ = " + fx(pick(sc.s)) + " y s₂ = " + fx(pick(sc.s)) + " " + sc.u + ", y los datos son normales.";
+      } else if (k === 2) {
+        sc = pick(PRO2); var a = pick([200, 250, 300, 400]), b = pick([250, 300, 400, 500]);
+        txt = sc.title + ": en la muestra de " + a + " " + sc.p1 + ", " + Math.round(a * pick([0.2, 0.3, 0.4])) + " " + sc.pred + "; en la de " + b + " " + sc.p2 + ", " + Math.round(b * pick([0.25, 0.35, 0.45])) + " " + sc.pred + ". Se quiere comparar ambas proporciones.";
+      } else {
+        sc = pick(DIF);
+        txt = sc.title + ": se quiere saber si la variabilidad (la varianza) de " + sc.vv + " es la misma en " + sc.w1 + " y " + sc.w2 + ". Muestras: n₁ = " + ri(8, 15) + ", s₁ = " + fx(pick(sc.s)) + " y n₂ = " + ri(8, 15) + ", s₂ = " + fx(pick(sc.s)) + " " + sc.u + ".";
+      }
+      items.push({ k: k, txt: txt });
+    });
+    return { items: items };
+  }
+
+  function buildExercise() {
+    var D = construirD(), K = construirK(), P = construirP2(), I = K ? construirI(K.sc) : null, S = construirSit();
+    if (!D || !K || !P || !I || !S) return null;
+    return { D: D, K: K, P: P, I: I, S: S };
+  }
+
+  /* =====================================================================
+     ESTADO, CRONÓMETRO Y AVISO DE LOS 3 MINUTOS
+     ===================================================================== */
+  var EX = null;
+  var TOTAL_SEG = 1200, AVISO_SEG = 180;
+  var ST = { alumno: {}, idx: 0, results: [], pts: 0, started: 0, left: TOTAL_SEG, tick: null, finished: false, avisado: false };
+
+  $("#themeBtn").addEventListener("click", function () {
+    var cur = document.documentElement.getAttribute("data-theme");
+    var sysDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    var now = cur ? cur : (sysDark ? "dark" : "light");
+    document.documentElement.setAttribute("data-theme", now === "dark" ? "light" : "dark");
+  });
+
+  /* panel «Tablas»: normal estándar, t-Student y F de Fisher siempre a la mano */
+  (function () {
+    var dr = $("#drawer"), pans = { z: $("#pane-z"), t: $("#pane-t"), f: $("#pane-f") }, btns = { z: $("#tab-z"), t: $("#tab-t"), f: $("#tab-f") };
+    pans.z.innerHTML = tablaZHTML(); pans.t.innerHTML = tablaTHTML();
+    pans.f.innerHTML = '<div class="fsel" id="fsel"></div><div id="ftab"></div>';
+    var pintaF = function () {
+      $("#fsel").innerHTML = FT.a.map(function (al) { return '<button type="button" data-a="' + al + '" class="' + (al === fSel ? "on" : "") + '">α/2 = ' + al + "</button>"; }).join("");
+      $("#ftab").innerHTML = '<p class="fnote">Área a la derecha α/2 = <b>' + fSel + '</b>. Columna ν₁ = grados de libertad del numerador; fila ν₂ = grados de libertad del denominador.</p><div class="ftabscroll">' + tablaFHTML(fSel) + "</div>";
+      Array.prototype.forEach.call(document.querySelectorAll("#fsel button"), function (b) { b.addEventListener("click", function () { fSel = parseFloat(b.getAttribute("data-a")); pintaF(); }); });
+    };
+    pintaF();
+    var abre = function (v) { dr.hidden = !v; $("#tablesBtn").setAttribute("aria-expanded", v ? "true" : "false"); };
+    $("#tablesBtn").addEventListener("click", function () { abre(dr.hidden); });
+    $("#drawerClose").addEventListener("click", function () { abre(false); });
+    var tab = function (k) {
+      ["z", "t", "f"].forEach(function (q) { pans[q].hidden = q !== k; btns[q].classList.toggle("on", q === k); });
+    };
+    ["z", "t", "f"].forEach(function (q) { btns[q].addEventListener("click", function () { tab(q); }); });
+    document.addEventListener("keydown", function (ev) { if (ev.key === "Escape") abre(false); });
+    tab("z");
+  })();
+
+  function paintTimer() {
+    var t = $("#timer"), mm = Math.floor(ST.left / 60), ss = ST.left % 60;
+    t.textContent = mm + ":" + (ss < 10 ? "0" : "") + ss;
+    t.classList.toggle("crit", ST.left <= 60);
+    t.classList.toggle("warn", ST.left > 60 && ST.left <= AVISO_SEG);
+  }
+  function avisarTresMinutos() {
+    if (ST.avisado || ST.finished) return;
+    ST.avisado = true;
+    var faltan = STEPS.length - ST.results.filter(Boolean).length;
+    $("#aviso-txt").textContent = faltan > 0
+      ? "Te faltan " + faltan + " paso" + (faltan === 1 ? "" : "s") + " por responder. Prioriza terminarlos: cada paso que envíes suma y lo que quede en blanco vale cero."
+      : "Ya respondiste todos los pasos. Revisa lo que quieras antes de que se cierre el laboratorio.";
+    $("#aviso3").hidden = false;
+    var t = $("#timer"); t.classList.add("aviso3");
+    setTimeout(function () { t.classList.remove("aviso3"); }, 7000);
+    setTimeout(function () { if (!$("#aviso3").hidden) $("#aviso3").hidden = true; }, 20000);
+  }
+  $("#avisoBtn").addEventListener("click", function () { $("#aviso3").hidden = true; });
+
+  function startTimer() {
+    ST.started = Date.now(); paintTimer();
+    ST.tick = setInterval(function () {
+      ST.left--;
+      if (ST.left <= 0) { ST.left = 0; paintTimer(); finish(true); return; }
+      if (ST.left === AVISO_SEG) avisarTresMinutos();
+      paintTimer();
+    }, 1000);
+  }
+  function paintScore() {
+    $("#scorepill").textContent = (Math.round(ST.pts * 10) / 10).toFixed(1) + " / 20";
+    $("#trackFill").style.width = Math.round((ST.idx / STEPS.length) * 100) + "%";
+  }
+  function fld(id, label, ancho) {
+    return '<div class="field"' + (ancho ? ' style="max-width:' + ancho + '"' : "") + '><label for="' + id + '">' + label +
+      '</label><input type="text" inputmode="decimal" autocomplete="off" id="' + id + '"></div>';
+  }
+  function mark(inp, ok) { if (!inp) return; inp.classList.remove("ok", "bad"); inp.classList.add(ok ? "ok" : "bad"); }
+  function opciones(nombre, lista) {
+    return '<div class="opts">' + lista.map(function (o, i) {
+      return '<label class="opt"><input type="radio" name="' + nombre + '" value="' + i + '"><span>' + esc(o.t) + "</span></label>";
+    }).join("") + "</div>";
+  }
+  function mcRes(root, nombre, lista, pts) {
+    var sel = root.querySelector('input[name="' + nombre + '"]:checked');
+    var ok = !!(sel && lista[+sel.value].ok);
+    return { ok: ok, pts: ok ? pts : 0,
+      elegida: sel ? lista[+sel.value].t : "sin responder",
+      why: sel && !ok ? (lista[+sel.value].w || "") : "",
+      correcta: lista.filter(function (o) { return o.ok; })[0].t };
+  }
+  var val = function (root, id) { return num(root.querySelector("#" + id).value); };
+  var vis = function (x) { return x == null ? "—" : x; };
+    var dosCurvas = function (a, b) { return '<div class="fig2">' + a + b + "</div>"; };
+  var sombra = function (a, b, cls) { return [{ a: a, b: b, cls: cls || "on" }]; };
+  var INF = 99;
+  var sv = function (x) { return String(x); };
+  var filaZ = function (k) { return (k < 0 ? "\u2212" : "") + (Math.floor(Math.abs(k) / 10) / 10).toFixed(1); };
+  var reemplaza = function (root, id, html) { var el = root.querySelector("#" + id); if (el) el.outerHTML = html; };
+
+
+  /* utilidades de este laboratorio */
+
+  var kzz = function (z) { return Math.round(z * 100); };
+  var confTxt = function (c) { return c + " %"; };
+  var LET = "ABC";
+
+
+  var ICs = function (L, U, d) { return "<" + fd(L, d) + " ; " + fd(U, d) + ">"; };
+  var eqEE = function (a, b) { return a != null && Math.abs(a - b) <= 0.011 + 0.00004 * Math.abs(b); };       /* error estándar (medias) */
+  var eqLU = function (a, b) { return a != null && Math.abs(a - b) <= 0.03; };                                  /* E, L, U (medias): 2 decimales */
+  var eqPe = function (a, b) { return a != null && Math.abs(a - b) <= 0.0006; };                                /* error estándar (proporciones) */
+  var eqPl = function (a, b) { return a != null && Math.abs(a - b) <= 0.0011; };                                /* L, U (proporciones): 4 decimales */
+  var eqR = function (a, b) { return a != null && Math.abs(a - b) <= Math.max(0.007 * Math.abs(b), 0.0105); };  /* cociente de varianzas */
+  var eqF = function (a, b) { return a != null && Math.abs(a - b) <= 0.0151; };                                 /* F de la tabla (acepta ±0.01 de tu tabla impresa) */
+  var sub = ["₁", "₂"];
+  var u2 = function (D) { return D.sc.u; };
+
+  /* ---------- textos de los casos ---------- */
+  function textoDif(D, fin) {
+    var sc = D.sc, d = sc.dp;
+    return sc.ctx + " Se tomó una muestra aleatoria de " + D.n1 + " " + sc.p1 + " y otra de " + D.n2 + " " + sc.p2 + ". Para " + sc.vv + " se obtuvo: x̄₁ = " + fd(D.x1, d) +
+      " " + sc.u + " y s₁ = " + fd(D.s1, d === 0 ? 0 : (D.s1 * 100 % 10 === 0 ? 1 : 2)) + " " + sc.u + " en " + sc.w1 + "; x̄₂ = " + fd(D.x2, d) + " " + sc.u + " y s₂ = " + fd(D.s2, d === 0 ? 0 : (D.s2 * 100 % 10 === 0 ? 1 : 2)) + " " + sc.u +
+      " en " + sc.w2 + ". Se supone que " + sc.vv + " es normal en ambos casos y que las muestras son independientes. " + fin;
+  }
+  var sd2 = function (D, s) { return D.sc.dp === 0 ? fd(s, 0) : String(rd(s, 2)); };
+  function textoDif2(D, fin) {
+    var sc = D.sc;
+    return sc.ctx + " Se tomó una muestra aleatoria de " + D.n1 + " " + sc.p1 + " y otra de " + D.n2 + " " + sc.p2 + ". Para " + sc.vv + " se obtuvo: x̄₁ = " + fd(D.x1, sc.dp) +
+      " " + sc.u + " y s₁ = " + sd2(D, D.s1) + " " + sc.u + " en " + sc.w1 + "; x̄₂ = " + fd(D.x2, sc.dp) + " " + sc.u + " y s₂ = " + sd2(D, D.s2) + " " + sc.u +
+      " en " + sc.w2 + ". Se supone que " + sc.vv + " es normal en ambos casos y que las muestras son independientes. " + fin;
+  }
+  function textoK(K) {
+    var sc = K.sc;
+    return sc.ctx + " Se tomó una muestra aleatoria de " + K.n1 + " " + sc.p1 + " y otra de " + K.n2 + " " + sc.p2 + ". Para " + sc.vv + " las medias muestrales son x̄₁ = " + fd(K.x1, sc.dp) + " " + sc.u +
+      " en " + sc.w1 + " y x̄₂ = " + fd(K.x2, sc.dp) + " " + sc.u + " en " + sc.w2 + ". Por estudios previos se conocen las desviaciones estándar poblacionales: σ₁ = " + fx(K.sd1) + " " + sc.u + " y σ₂ = " + fx(K.sd2) + " " + sc.u +
+      ". Se supone normalidad y muestras independientes. Estime con un nivel de confianza del " + K.conf + " % la diferencia entre las medias poblacionales μ₁ − μ₂ (1 = " + sc.w1 + ", 2 = " + sc.w2 + ").";
+  }
+  function textoP(P) {
+    var sc = P.sc;
+    return sc.ctx + " En una muestra aleatoria de " + P.n1 + " " + sc.p1 + ", " + P.x1 + " " + sc.pred + "; en otra muestra aleatoria e independiente de " + P.n2 + " " + sc.p2 + ", " + P.x2 + " " + sc.pred +
+      ". Estime con un nivel de confianza del " + P.conf + " % la diferencia entre las proporciones poblacionales π₁ − π₂ (1 = " + sc.p1 + ", 2 = " + sc.p2 + ").";
+  }
+  function textoI(I) {
+    var sc = I.sc;
+    return sc.ctx + " Con muestras aleatorias independientes de " + I.n1 + " " + sc.p1 + " y de " + I.n2 + " " + sc.p2 + " se construyó, para la diferencia de medias poblacionales μ₁ − μ₂ de " + sc.vv +
+      ", el intervalo " + ICs(I.L, I.U, 2) + " " + sc.u + ". Las desviaciones estándar poblacionales son conocidas: σ₁ = " + fx(I.sd1) + " " + sc.u + " y σ₂ = " + fx(I.sd2) + " " + sc.u + ". ¿Con qué nivel de confianza se construyó el intervalo?";
+  }
+
+  /* =====================================================================
+     PASOS · 7 pasos, 20 puntos
+     ===================================================================== */
+  var WSIT = [
+    [null, "Aquí las desviaciones estándar poblacionales son conocidas: se usa z, no t.", "Se comparan medias de una variable numérica, no proporciones.", "El cociente de varianzas compara la variabilidad; aquí se comparan promedios."],
+    ["Aquí σ₁ y σ₂ no se conocen (solo s₁ y s₂): corresponde t-Student, no z.", null, "Se comparan medias de una variable numérica, no proporciones.", "La F sirve para comparar varianzas; para comparar las medias se usa t."],
+    ["Se comparan proporciones (porcentajes), no medias.", "La t es para medias; para proporciones se usa z con p₁ y p₂.", null, "La F compara varianzas; aquí lo que se compara son proporciones."],
+    ["Aquí se quiere comparar la variabilidad (varianza), no los promedios.", "La t es para medias; para comparar varianzas se usa la F de Fisher.", "La variable es numérica, no hay proporciones.", null]
+  ];
+  function listaKind(k) { return KIND.map(function (t, j) { return { t: t, ok: j === k, w: j === k ? "" : WSIT[k][j] }; }); }
+  var LETRAS = "ABC";
+
+  var STEPS = [
+    /* ---------- 1 · elegir el intervalo --------------------------------- */
+    {
+      title: "Paso 1 · ¿Qué intervalo uso en cada situación?", max: 2, parte: 1, comp: "caso",
+      html: function (e) {
+        var S = e.S;
+        e._q1 = shuffle([
+          { t: "Caso II: t-Student con n₁ + n₂ − 2 grados de libertad y la desviación combinada sp.", ok: true },
+          { t: "Caso III: t-Student con g grados de libertad (Welch).", ok: false, w: "El caso III se usa cuando el intervalo del cociente NO contiene el 1 (varianzas diferentes). Si contiene el 1, las varianzas son similares y va el caso II." },
+          { t: "La normal estándar z, porque las varianzas son iguales.", ok: false, w: "Si σ₁ y σ₂ no se conocen se usa t, aunque las varianzas resulten parecidas; z es solo para σ conocidas." },
+          { t: "No se pueden comparar las medias si no se conocen las varianzas.", ok: false, w: "Sí se pueden: primero se decide con el intervalo del cociente de varianzas y luego se elige el caso II o el caso III." }
+        ]);
+        var h = '<p class="say">Para <strong>comparar dos poblaciones</strong> hay cuatro intervalos. Decide cuál corresponde a cada situación (las muestras son independientes).</p>' +
+          '<div class="formula">Medias, σ₁ y σ₂ conocidas  →  z\nMedias, σ₁ y σ₂ desconocidas  →  t (antes se mira el cociente de varianzas con la F)\nProporciones π₁ − π₂  →  z\nCociente de varianzas σ₁²/σ₂²  →  F de Fisher' +
+          "<small>Si el intervalo del cociente de varianzas contiene el 1 → varianzas similares → caso II (varianza combinada). Si no lo contiene → varianzas diferentes → caso III (grados de libertad g).</small></div>";
+        S.items.forEach(function (it, i) {
+          h += '<div class="caso" style="margin-top:10px"><div class="eyebrow">Situación ' + LETRAS[i] + "</div><p>" + esc(it.txt) + "</p>" + opciones("qs" + i, listaKind(it.k)) + "</div>";
+        });
+        h += '<p class="say" style="margin-top:16px">Si el intervalo para σ₁²/σ₂² <b>contiene el 1</b>, ¿cómo se construye después el intervalo para μ₁ − μ₂ con σ desconocidas?</p>' + opciones("q1", e._q1);
+        return h;
+      },
+      grade: function (e, root) {
+        var S = e.S, ms = S.items.map(function (it, i) { return mcRes(root, "qs" + i, listaKind(it.k), 0.5); }), mc = mcRes(root, "q1", e._q1, 0.5);
+        var tip = S.items.map(function (it, i) { return "Situación " + LETRAS[i] + ": " + KIND[it.k]; }).join(".  ") + ".  Con el 1 dentro del intervalo de varianzas: caso II (t con n₁ + n₂ − 2 gl y sp).";
+        ms.forEach(function (m) { if (m.why) tip = m.why + " " + tip; });
+        if (mc.why) tip = mc.why + " " + tip;
+        return { pts: ms.reduce(function (a, m) { return a + m.pts; }, 0) + mc.pts, mcOk: ms.every(function (m) { return m.ok; }) && mc.ok,
+          user: S.items.map(function (it, i) { return ["Situación " + LETRAS[i], ms[i].elegida]; }).concat([["Varianzas similares", mc.elegida]]),
+          right: S.items.map(function (it, i) { return ["Situación " + LETRAS[i], ms[i].correcta]; }).concat([["Correcta", mc.correcta]]), tip: tip };
+      }
+    },
+
+    /* ---------- 2 · cociente de varianzas ------------------------------- */
+    {
+      title: "Paso 2 · Intervalo para el cociente de varianzas (F de Fisher)", max: 4, parte: 1, comp: "var",
+      html: function (e) {
+        var D = e.D, sc = D.sc;
+        e._q2 = shuffle([
+          { t: "Contiene el 1: las varianzas son estadísticamente similares (homogéneas).", ok: D.homog,
+            w: "El intervalo " + ICs(D.Lr, D.Ur, 3) + " no contiene el 1, así que no hay evidencia de varianzas similares." },
+          { t: "No contiene el 1 y queda por encima: σ₁² es mayor que σ₂².", ok: !D.homog && D.Lr > 1,
+            w: D.homog ? "El 1 sí está dentro del intervalo, no puede decirse que σ₁² sea mayor." : "Todo el intervalo queda por debajo de 1, no por encima: σ₁² es menor que σ₂²." },
+          { t: "No contiene el 1 y queda por debajo: σ₁² es menor que σ₂².", ok: !D.homog && D.Ur < 1,
+            w: D.homog ? "El 1 sí está dentro del intervalo, no puede decirse que σ₁² sea menor." : "Todo el intervalo queda por encima de 1, no por debajo: σ₁² es mayor que σ₂²." },
+          { t: "Como s₁² ≠ s₂², las varianzas poblacionales son distintas.", ok: false,
+            w: "Las varianzas muestrales casi nunca coinciden; se decide mirando si el intervalo contiene o no el 1." }
+        ]);
+        return casoHTML(sc, textoDif2(D, "Con un nivel de confianza del " + D.conf + " %, estime el cociente de varianzas σ₁²/σ₂² y decida si las varianzas son homogéneas."),
+          [["n₁", D.n1], ["s₁", sd2(D, D.s1)], ["n₂", D.n2], ["s₂", sd2(D, D.s2)], ["1 − α", (D.conf / 100).toFixed(2)]]) +
+          '<p class="say">Se usa la <strong>F de Fisher</strong>. Su tabla da el área a la <b>derecha</b> α/2; el límite inferior usa F con los grados de libertad (n₁−1 ; n₂−1) y el superior los invierte (n₂−1 ; n₁−1). Al final se mira si el intervalo contiene el <b>1</b>.</p>' +
+          '<div class="formula">s₁²/s₂² × 1/F(α/2 ; n₁−1 , n₂−1)  ≤  σ₁²/σ₂²  ≤  s₁²/s₂² × F(α/2 ; n₂−1 , n₁−1)' +
+          "<small>Escribe la razón s₁²/s₂² con 3 decimales; F tal cual de la tabla (2 decimales, la de tu ppt puede diferir en ±0.01); L y U con 3 decimales. En F(α/2 ; a , b): a = gl del numerador (columna), b = gl del denominador (fila).</small></div>" +
+          '<div class="inputs">' + fld("s2r", "Razón s₁² / s₂²") + fld("s2fa", "F(α/2 ; n₁−1 , n₂−1)  — para L") + fld("s2fb", "F(α/2 ; n₂−1 , n₁−1)  — para U") + fld("s2l", "Límite inferior L") + fld("s2u", "Límite superior U") + "</div>" +
+          '<p class="say" style="margin-top:16px">¿Qué indica el intervalo que obtuviste?</p>' + opciones("q2", e._q2) + '<div id="mini2"></div><div id="cv2"></div><div id="ic2"></div>';
+      },
+      grade: function (e, root) {
+        var D = e.D, r = val(root, "s2r"), fa = val(root, "s2fa"), fb = val(root, "s2fb"), L = val(root, "s2l"), U = val(root, "s2u");
+        var or = eq(r, D.ratio, 0.0011), ofa = eqF(fa, D.Fa), ofb = eqF(fb, D.Fb), oL = eqR(L, D.Lr), oU = eqR(U, D.Ur);
+        mark(root.querySelector("#s2r"), or); mark(root.querySelector("#s2fa"), ofa); mark(root.querySelector("#s2fb"), ofb); mark(root.querySelector("#s2l"), oL); mark(root.querySelector("#s2u"), oU);
+        var mc = mcRes(root, "q2", e._q2, 1);
+        var tip = "α/2 = " + D.al + ".  s₁² / s₂² = " + sd2(D, D.s1) + "² / " + sd2(D, D.s2) + "² = " + fd(D.ratio, 3) + ".  F(" + D.al + " ; " + D.da + " , " + D.db + ") = " + f2(D.Fa) + " y F(" + D.al + " ; " + D.db + " , " + D.da + ") = " + f2(D.Fb) +
+          ".  L = " + fd(D.ratio, 3) + " / " + f2(D.Fa) + " = " + fd(D.Lr, 3) + ";  U = " + fd(D.ratio, 3) + " × " + f2(D.Fb) + " = " + fd(D.Ur, 3) + ".  Intervalo " + ICs(D.Lr, D.Ur, 3) + (D.homog ? " contiene el 1: varianzas similares." : " no contiene el 1: varianzas diferentes.");
+        if (fa != null && fb != null && !ofa && !ofb && eqF(fa, D.Fb) && eqF(fb, D.Fa)) tip = "Intercambiaste los dos valores de F: el de L tiene ν₁ = n₁ − 1 (columna) y ν₂ = n₂ − 1 (fila), y el de U los invierte. " + tip;
+        if (fa != null && !ofa && FT.n >= D.n1 && D.n2 <= FT.n && eqF(fa, fval(D.al, D.n1, D.n2))) tip = "Usaste n en lugar de n − 1 en los grados de libertad de la F. " + tip;
+        if (L != null && U != null && !oL && !oU && eqR(L, D.Ur) && eqR(U, D.Lr)) tip = "Invertiste los extremos: el límite inferior divide entre F y el superior multiplica por F. " + tip;
+        if (r != null && !or && eq(r, D.s1 / D.s2, 0.0011)) tip = "Escribiste s₁ / s₂; el intervalo usa las varianzas, es decir, s₁² / s₂². " + tip;
+        if (mc.why) tip = mc.why + " " + tip;
+        return { pts: (or ? 0.5 : 0) + (ofa ? 0.5 : 0) + (ofb ? 0.5 : 0) + (oL ? 0.75 : 0) + (oU ? 0.75 : 0) + mc.pts, mcOk: mc.ok,
+          user: [["s₁²/s₂²", vis(r)], ["F para L", vis(fa)], ["F para U", vis(fb)], ["L", vis(L)], ["U", vis(U)], ["Conclusión", mc.elegida]],
+          right: [["s₁²/s₂²", fd(D.ratio, 3)], ["F para L", f2(D.Fa)], ["F para U", f2(D.Fb)], ["L", fd(D.Lr, 3)], ["U", fd(D.Ur, 3)], ["Correcta", mc.correcta]], tip: tip };
+      },
+      after: function (e, root) {
+        var D = e.D;
+        $("#mini2", root).innerHTML = minisF([[D.al, D.da, D.db], [D.al, D.db, D.da]]);
+        $("#cv2", root).innerHTML = cajaF("cf", { a: D.da, b: D.db, fc: D.Fa, l: "F = " + f2(D.Fa) }, "Curva F(" + D.da + " ; " + D.db + "): la cola derecha tiene área α/2 = " + D.al + " a partir de F = " + f2(D.Fa) + ". La F no es simétrica, por eso se leen dos valores distintos.");
+        $("#ic2", root).innerHTML = cajaIC("icr", { L: D.Lr, U: D.Ur, m: D.ratio, c: 1, cname: "1", dec: 3, name: "s₁²/s₂²" },
+          D.homog ? "El 1 queda dentro del intervalo: no hay evidencia de que las varianzas sean distintas (caso II en el paso 4)." : "El 1 queda fuera del intervalo: las varianzas son diferentes (caso III en el paso 4).");
+      }
+    },
+
+    /* ---------- 3 · diferencia de medias, σ conocidas ------------------- */
+    {
+      title: "Paso 3 · Diferencia de medias con σ conocidas (z)", max: 2.5, parte: 2, comp: "medias",
+      html: function (e) {
+        var K = e.K, sc = K.sc;
+        return casoHTML(sc, textoK(K),
+          [["n₁", K.n1], ["x̄₁", fd(K.x1, sc.dp)], ["σ₁", fx(K.sd1)], ["n₂", K.n2], ["x̄₂", fd(K.x2, sc.dp)], ["σ₂", fx(K.sd2)], ["1 − α", (K.conf / 100).toFixed(2)]]) +
+          '<p class="say">Como σ₁ y σ₂ son conocidas se usa <strong>z</strong>. Se busca el área <b>1 − α/2</b> en la tabla normal, se calcula el error estándar de la diferencia y se suma y resta el margen E a x̄₁ − x̄₂.</p>' +
+          '<div class="formula">(x̄₁ − x̄₂) ± z(1−α/2) · √( σ₁²/n₁ + σ₂²/n₂ )\nEE = √( σ₁²/n₁ + σ₂²/n₂ )          E = z · EE          Intervalo = &lt;(x̄₁ − x̄₂) − E ; (x̄₁ − x̄₂) + E&gt;' +
+          "<small>z con 2 decimales. Redondea EE, E y los extremos a 2 decimales (en " + esc(sc.u) + ").</small></div>" +
+          '<div class="inputs">' + fld("s3z", "z  (área 1 − α/2)") + fld("s3ee", "Error estándar EE") + fld("s3e", "Margen de error E") + fld("s3l", "Límite inferior L") + fld("s3u", "Límite superior U") + "</div>" +
+          '<div id="mini3"></div><div id="cv3"></div><div id="ic3"></div>';
+      },
+      grade: function (e, root) {
+        var K = e.K, sc = K.sc, z = val(root, "s3z"), ee = val(root, "s3ee"), E = val(root, "s3e"), L = val(root, "s3l"), U = val(root, "s3u");
+        var oz = eq(z, K.z, 0.0051), oee = eqEE(ee, K.EE), oE = eqLU(E, K.E), oL = eqLU(L, K.L), oU = eqLU(U, K.U);
+        mark(root.querySelector("#s3z"), oz); mark(root.querySelector("#s3ee"), oee); mark(root.querySelector("#s3e"), oE); mark(root.querySelector("#s3l"), oL); mark(root.querySelector("#s3u"), oU);
+        var tip = "1 − α/2 = " + fd(K.area, 3) + " → z = " + f2(K.z) + ".  EE = √(" + fx(K.sd1) + "²/" + K.n1 + " + " + fx(K.sd2) + "²/" + K.n2 + ") = " + f2(K.EE) + ".  E = " + f2(K.z) + " × " + f2(K.EE) + " = " + f2(K.E) +
+          ".  x̄₁ − x̄₂ = " + fd(K.x1, sc.dp) + " − " + fd(K.x2, sc.dp) + " = " + f2(K.d) + ".  Intervalo: " + ICs(K.L, K.U, 2) + " " + sc.u + ".";
+        if (z != null && !oz && eq(z, zCerca(K.conf / 100).z, 0.0051)) tip = "Usaste el área 1 − α = " + (K.conf / 100).toFixed(2) + "; se busca 1 − α/2 = " + fd(K.area, 3) + ". " + tip;
+        if (ee != null && !oee && eqEE(ee, K.sd1 / Math.sqrt(K.n1) + K.sd2 / Math.sqrt(K.n2))) tip = "Sumaste los dos errores estándar; hay que sumar las varianzas σ₁²/n₁ + σ₂²/n₂ y luego sacar la raíz. " + tip;
+        if (ee != null && !oee && eqEE(ee, Math.sqrt(K.sd1 * K.sd1 / K.n1 + K.sd2 * K.sd2 / K.n2) * Math.sqrt(K.n1 + K.n2))) tip = "Revisa las divisiones entre n₁ y n₂. " + tip;
+        if (L != null && U != null && !oL && !oU && eqLU(L, K.U) && eqLU(U, K.L)) tip = "Invertiste los extremos: L = (x̄₁ − x̄₂) − E y U = (x̄₁ − x̄₂) + E. " + tip;
+        return { pts: (oz ? 0.5 : 0) + (oee ? 0.5 : 0) + (oE ? 0.5 : 0) + (oL ? 0.5 : 0) + (oU ? 0.5 : 0),
+          user: [["z", vis(z)], ["EE", vis(ee)], ["E", vis(E)], ["L", vis(L)], ["U", vis(U)]],
+          right: [["z", f2(K.z)], ["EE", f2(K.EE)], ["E", f2(K.E)], ["L", f2(K.L)], ["U", f2(K.U)]], tip: tip };
+      },
+      after: function (e, root) {
+        var K = e.K;
+        $("#mini3", root).innerHTML = miniZ([kzz(K.z)]);
+        $("#cv3", root).innerHTML = cajaCurva("cz", { ticks: [{ z: 0, l: "0" }], regs: sombra(-INF, -K.z, "off").concat(sombra(-K.z, K.z, "on"), sombra(K.z, INF, "off")),
+          marks: [{ z: -K.z, l: neg(f2(-K.z)) }, { z: K.z, l: f2(K.z) }] },
+          "El área central es 1 − α = " + (K.conf / 100).toFixed(2) + "; en cada cola queda α/2 = " + fd((1 - K.conf / 100) / 2, 3) + ".", "confianza 1 − α", "colas α/2");
+        $("#ic3", root).innerHTML = cajaIC("icz", { L: K.L, U: K.U, m: K.d, c: 0, cname: "0", dec: 2, name: "x̄₁ − x̄₂" },
+          "Con " + K.conf + " % de confianza, μ₁ − μ₂ está entre " + f2(K.L) + " y " + f2(K.U) + " " + K.sc.u + (K.estado === "cero" ? ". Contiene el 0: no hay diferencia clara." : ". No contiene el 0: hay diferencia."));
+      }
+    },
+
+    /* ---------- 4 · diferencia de medias, σ desconocidas ---------------- */
+    {
+      title: "Paso 4 · Diferencia de medias con σ desconocidas (t-Student)", max: 4, parte: 2, comp: "medias",
+      html: function (e) {
+        var D = e.D, sc = D.sc;
+        e._q4 = shuffle([
+          { t: "Caso I: z, porque σ₁ y σ₂ son conocidas.", ok: false, w: "σ₁ y σ₂ no se conocen en este caso (solo s₁ y s₂), así que no corresponde z." },
+          { t: "Caso II: σ desconocidas pero similares (t con n₁ + n₂ − 2 gl y varianza combinada).", ok: D.caso === 2,
+            w: "El intervalo del paso 2 " + ICs(D.Lr, D.Ur, 3) + " no contiene el 1: las varianzas son diferentes, no similares. Corresponde el caso III." },
+          { t: "Caso III: σ desconocidas y diferentes (t con g grados de libertad).", ok: D.caso === 3,
+            w: "El intervalo del paso 2 " + ICs(D.Lr, D.Ur, 3) + " contiene el 1: las varianzas son similares. Corresponde el caso II." }
+        ]);
+        return casoHTML(sc, "Con los mismos datos del paso 2 y el mismo nivel de confianza del " + D.conf + " %, estime la diferencia entre las medias poblacionales μ₁ − μ₂ (1 = " + sc.w1 + ", 2 = " + sc.w2 + ").",
+          [["n₁", D.n1], ["x̄₁", fd(D.x1, sc.dp)], ["s₁", sd2(D, D.s1)], ["n₂", D.n2], ["x̄₂", fd(D.x2, sc.dp)], ["s₂", sd2(D, D.s2)], ["1 − α", (D.conf / 100).toFixed(2)]]) +
+          '<p class="say">Lo que concluiste con el cociente de varianzas en el paso 2 decide la fórmula. Elige el caso, lee la <b>t</b> con el área 1 − α/2 y los grados de libertad que corresponden, y calcula el error estándar EE que multiplica a t.</p>' +
+          '<div class="formula">Caso II (varianzas similares):   (x̄₁ − x̄₂) ± t(1−α/2 ; n₁+n₂−2) · sp · √(1/n₁ + 1/n₂)\n                                sp = √[ ((n₁−1)s₁² + (n₂−1)s₂²) / (n₁+n₂−2) ]\n' +
+          'Caso III (varianzas diferentes): (x̄₁ − x̄₂) ± t(1−α/2 ; g) · √( s₁²/n₁ + s₂²/n₂ )\n                                g = (s₁²/n₁ + s₂²/n₂)² / [ (s₁²/n₁)²/(n₁−1) + (s₂²/n₂)²/(n₂−1) ]   (redondea g al entero más cercano)\nEE = lo que multiplica a t          E = t · EE' +
+          "<small>t se lee tal cual de la tabla (3 decimales). Redondea EE, E y los extremos a 2 decimales (en " + esc(sc.u) + ").</small></div>" +
+          '<p class="say"><strong>(a)</strong> ¿Qué caso corresponde?</p>' + opciones("q4", e._q4) +
+          '<div class="inputs" style="margin-top:14px">' + fld("s4gl", "Grados de libertad (r o g entero)") + fld("s4t", "t(1 − α/2 ; gl)") + fld("s4ee", "Error estándar EE") + fld("s4e", "Margen de error E") + fld("s4l", "Límite inferior L") + fld("s4u", "Límite superior U") + "</div>" +
+          '<div id="mini4"></div><div id="ic4"></div>';
+      },
+      grade: function (e, root) {
+        var D = e.D, sc = D.sc, mc = mcRes(root, "q4", e._q4, 0.5), gl = val(root, "s4gl"), t = val(root, "s4t"), ee = val(root, "s4ee"), E = val(root, "s4e"), L = val(root, "s4l"), U = val(root, "s4u");
+        var ogl = gl != null && (Math.abs(gl - D.df) < 1e-9 || (D.caso === 3 && Math.abs(gl - D.g) <= 0.06)), ot = eq(t, D.t, 0.0015), oee = eqEE(ee, D.EE), oE = eqLU(E, D.E), oL = eqLU(L, D.L), oU = eqLU(U, D.U);
+        mark(root.querySelector("#s4gl"), ogl); mark(root.querySelector("#s4t"), ot); mark(root.querySelector("#s4ee"), oee); mark(root.querySelector("#s4e"), oE); mark(root.querySelector("#s4l"), oL); mark(root.querySelector("#s4u"), oU);
+        var tip = D.caso === 2
+          ? "Caso II. gl = " + D.n1 + " + " + D.n2 + " − 2 = " + D.df + ".  t(" + D.tp + " ; " + D.df + ") = " + f3(D.t) + ".  sp = √(" + fd(D.sp2, 2) + ") = " + f2(Math.sqrt(D.sp2)) + ";  EE = sp · √(1/" + D.n1 + " + 1/" + D.n2 + ") = " + f2(D.EE) + ".  E = " + f3(D.t) + " × " + f2(D.EE) + " = " + f2(D.E) + "."
+          : "Caso III. g = " + fd(D.g, 2) + " ≈ " + D.gr + " gl.  t(" + D.tp + " ; " + D.gr + ") = " + f3(D.t) + ".  EE = √(" + sd2(D, D.s1) + "²/" + D.n1 + " + " + sd2(D, D.s2) + "²/" + D.n2 + ") = " + f2(D.EE) + ".  E = " + f3(D.t) + " × " + f2(D.EE) + " = " + f2(D.E) + ".";
+        tip += "  x̄₁ − x̄₂ = " + f2(D.d) + ".  Intervalo: " + ICs(D.L, D.U, 2) + " " + sc.u + ".";
+        if (L != null && !oL && eqLU(L, D.alt.L) && U != null && eqLU(U, D.alt.U)) tip = "Aplicaste el caso " + (D.caso === 2 ? "III" : "II") + ", pero según el paso 2 corresponde el caso " + D.caso + ". " + tip;
+        if (gl != null && !ogl && D.caso === 2 && Math.abs(gl - (D.n1 + D.n2)) < 1e-9) tip = "Los grados de libertad son n₁ + n₂ − 2, no n₁ + n₂. " + tip;
+        if (t != null && !ot && TT.p.indexOf(D.conf / 100) >= 0 && eq(t, tval(D.df, D.conf / 100), 0.0015)) tip = "Leíste la columna 1 − α; la tabla t se entra con 1 − α/2 = " + D.tp + ". " + tip;
+        if (E != null && !oE && eqLU(E, D.t * D.EE * Math.sqrt(2))) tip = "Revisa el error estándar: E = t · EE. " + tip;
+        if (mc.why) tip = mc.why + " " + tip;
+        return { pts: mc.pts + (ogl ? 0.5 : 0) + (ot ? 0.5 : 0) + (oee ? 0.75 : 0) + (oE ? 0.5 : 0) + (oL ? 0.625 : 0) + (oU ? 0.625 : 0), mcOk: mc.ok,
+          user: [["Caso", mc.elegida], ["gl", vis(gl)], ["t", vis(t)], ["EE", vis(ee)], ["E", vis(E)], ["L", vis(L)], ["U", vis(U)]],
+          right: [["Caso", mc.correcta], ["gl", D.caso === 2 ? D.df : D.gr + " (g = " + fd(D.g, 2) + ")"], ["t", f3(D.t)], ["EE", f2(D.EE)], ["E", f2(D.E)], ["L", f2(D.L)], ["U", f2(D.U)]], tip: tip };
+      },
+      after: function (e, root) {
+        var D = e.D;
+        $("#mini4", root).innerHTML = miniT(D.df, D.tp);
+        $("#ic4", root).innerHTML = cajaIC("ict", { L: D.L, U: D.U, m: D.d, c: 0, cname: "0", dec: 2, name: "x̄₁ − x̄₂" },
+          "Con " + D.conf + " % de confianza, μ₁ − μ₂ está entre " + f2(D.L) + " y " + f2(D.U) + " " + D.sc.u + (D.estado === "cero" ? ". Contiene el 0: no hay diferencia clara." : ". No contiene el 0: hay diferencia."));
+      }
+    },
+
+    /* ---------- 5 · diferencia de proporciones -------------------------- */
+    {
+      title: "Paso 5 · Diferencia de proporciones (z)", max: 3.5, parte: 3, comp: "prop",
+      html: function (e) {
+        var P = e.P, sc = P.sc;
+        return casoHTML(sc, textoP(P),
+          [["n₁", P.n1], ["x₁", P.x1], ["n₂", P.n2], ["x₂", P.x2], ["1 − α", (P.conf / 100).toFixed(2)]]) +
+          '<p class="say">Se comparan dos proporciones con la normal estándar: primero p₁ = x₁/n₁ y p₂ = x₂/n₂, luego z(1 − α/2) y el error estándar de la diferencia, que suma las dos varianzas dentro de la raíz.</p>' +
+          '<div class="formula">(p₁ − p₂) ± z(1−α/2) · √( p₁(1−p₁)/n₁ + p₂(1−p₂)/n₂ )\nEE = √( p₁(1−p₁)/n₁ + p₂(1−p₂)/n₂ )          E = z · EE' +
+          "<small>Escribe p₁ y p₂ con 3 decimales, z con 2 decimales y EE y los extremos con 4 decimales.</small></div>" +
+          '<div class="inputs">' + fld("s5p1", "p₁  (proporción 1)") + fld("s5p2", "p₂  (proporción 2)") + fld("s5z", "z  (área 1 − α/2)") + fld("s5ee", "Error estándar EE") + fld("s5l", "Límite inferior L") + fld("s5u", "Límite superior U") + "</div>" +
+          '<div id="mini5"></div><div id="ic5"></div>';
+      },
+      grade: function (e, root) {
+        var P = e.P, p1 = val(root, "s5p1"), p2 = val(root, "s5p2"), z = val(root, "s5z"), ee = val(root, "s5ee"), L = val(root, "s5l"), U = val(root, "s5u");
+        var o1 = eq(p1, P.p1, 0.0006), o2 = eq(p2, P.p2, 0.0006), oz = eq(z, P.z, 0.0051), oee = eqPe(ee, P.EE), oL = eqPl(L, P.L), oU = eqPl(U, P.U);
+        mark(root.querySelector("#s5p1"), o1); mark(root.querySelector("#s5p2"), o2); mark(root.querySelector("#s5z"), oz); mark(root.querySelector("#s5ee"), oee); mark(root.querySelector("#s5l"), oL); mark(root.querySelector("#s5u"), oU);
+        var tip = "p₁ = " + P.x1 + " / " + P.n1 + " = " + fd(P.p1, 3) + ";  p₂ = " + P.x2 + " / " + P.n2 + " = " + fd(P.p2, 3) + ".  z(" + fd(P.area, 3) + ") = " + f2(P.z) + ".  EE = √(" + fd(P.p1, 3) + "×" + fd(1 - P.p1, 3) + "/" + P.n1 + " + " + fd(P.p2, 3) + "×" + fd(1 - P.p2, 3) + "/" + P.n2 + ") = " + fd(P.EE, 4) +
+          ".  E = " + f2(P.z) + " × " + fd(P.EE, 4) + " = " + fd(P.E, 4) + ".  p₁ − p₂ = " + fd(P.d, 4) + ".  Intervalo: " + ICs(P.L, P.U, 4) + ".";
+        if (ee != null && !oee && eqPe(ee, P.p1 * (1 - P.p1) / P.n1 + P.p2 * (1 - P.p2) / P.n2)) tip = "Te faltó la raíz cuadrada: el error estándar es √( p₁(1−p₁)/n₁ + p₂(1−p₂)/n₂ ). " + tip;
+        if (z != null && !oz && eq(z, zCerca(P.conf / 100).z, 0.0051)) tip = "Usaste el área 1 − α; se busca 1 − α/2 = " + fd(P.area, 3) + ". " + tip;
+        if (L != null && U != null && !oL && !oU && eqPl(L, P.U) && eqPl(U, P.L)) tip = "Invertiste los extremos: L = (p₁ − p₂) − E y U = (p₁ − p₂) + E. " + tip;
+        return { pts: (o1 ? 0.25 : 0) + (o2 ? 0.25 : 0) + (oz ? 0.5 : 0) + (oee ? 0.75 : 0) + (oL ? 0.875 : 0) + (oU ? 0.875 : 0),
+          user: [["p₁", vis(p1)], ["p₂", vis(p2)], ["z", vis(z)], ["EE", vis(ee)], ["L", vis(L)], ["U", vis(U)]],
+          right: [["p₁", fd(P.p1, 3)], ["p₂", fd(P.p2, 3)], ["z", f2(P.z)], ["EE", fd(P.EE, 4)], ["L", fd(P.L, 4)], ["U", fd(P.U, 4)]], tip: tip };
+      },
+      after: function (e, root) {
+        var P = e.P;
+        $("#mini5", root).innerHTML = miniZ([kzz(P.z)]);
+        $("#ic5", root).innerHTML = cajaIC("icp", { L: P.L, U: P.U, m: P.d, c: 0, cname: "0", dec: 4, name: "p₁ − p₂" },
+          "Con " + P.conf + " % de confianza, π₁ − π₂ está entre " + fd(P.L, 4) + " y " + fd(P.U, 4) + (P.estado === "cero" ? ". Contiene el 0: no hay diferencia clara entre las proporciones." : ". No contiene el 0: las proporciones son diferentes."));
+      }
+    },
+
+    /* ---------- 6 · interpretación -------------------------------------- */
+    {
+      title: "Paso 6 · Interpretar los intervalos", max: 2.5, parte: 4, comp: "interp",
+      html: function (e) {
+        var D = e.D, P = e.P, sc = D.sc, sp = P.sc;
+        var conclMedias = function (est) {
+          return [
+            { t: "Contiene el 0: no hay evidencia de que las medias sean diferentes.", ok: est === "cero", w: "El intervalo " + ICs(D.L, D.U, 2) + " no contiene el 0, así que sí hay diferencia." },
+            { t: "Todos los valores son positivos: μ₁ es mayor que μ₂ (" + sc.w1 + " tiene la media mayor).", ok: est === "pos", w: est === "cero" ? "El 0 está dentro del intervalo, no se puede afirmar que μ₁ sea mayor." : "Todos los valores son negativos: μ₁ es menor que μ₂." },
+            { t: "Todos los valores son negativos: μ₁ es menor que μ₂ (" + sc.w2 + " tiene la media mayor).", ok: est === "neg", w: est === "cero" ? "El 0 está dentro del intervalo, no se puede afirmar que μ₁ sea menor." : "Todos los valores son positivos: μ₁ es mayor que μ₂." },
+            { t: "Como x̄₁ ≠ x̄₂, las medias poblacionales son distintas.", ok: false, w: "Las medias muestrales casi nunca coinciden; la decisión se toma mirando si el intervalo contiene el 0." }
+          ];
+        };
+        e._q6a = shuffle(conclMedias(D.estado));
+        e._q6b = shuffle([
+          { t: "Contiene el 0: no hay evidencia de que las proporciones sean diferentes.", ok: P.estado === "cero", w: "El intervalo " + ICs(P.L, P.U, 4) + " no contiene el 0, así que las proporciones son diferentes." },
+          { t: "Todos los valores son positivos: π₁ es mayor que π₂.", ok: P.estado === "pos", w: P.estado === "cero" ? "El 0 está dentro del intervalo, no se puede afirmar que π₁ sea mayor." : "Todos los valores son negativos: π₁ es menor que π₂." },
+          { t: "Todos los valores son negativos: π₁ es menor que π₂.", ok: P.estado === "neg", w: P.estado === "cero" ? "El 0 está dentro del intervalo, no se puede afirmar que π₁ sea menor." : "Todos los valores son positivos: π₁ es mayor que π₂." },
+          { t: "Como p₁ ≠ p₂, las proporciones poblacionales son distintas.", ok: false, w: "Las proporciones muestrales casi nunca coinciden; se decide con el intervalo." }
+        ]);
+        var nueva = D.conf === 99 ? 90 : 99, sube = nueva > D.conf;
+        e._q6c = shuffle([
+          { t: sube ? "Se hace más ancho." : "Se hace más angosto.", ok: true },
+          { t: sube ? "Se hace más angosto." : "Se hace más ancho.", ok: false, w: sube ? "Más confianza exige un t mayor, el margen E crece y el intervalo se ensancha." : "Menos confianza exige un t menor y el intervalo se estrecha." },
+          { t: "Queda igual: x̄₁, x̄₂, s₁ y s₂ no cambian.", ok: false, w: "Aunque los datos no cambian, el valor de la tabla t sí cambia con el nivel de confianza." },
+          { t: "Se desplaza, pero con el mismo ancho.", ok: false, w: "El centro x̄₁ − x̄₂ no se mueve; lo que cambia es el margen de error." }
+        ]);
+        e._nueva = nueva; e._sube = sube;
+        return '<div class="caso"><div class="eyebrow">Caso del paso 4 · ' + esc(sc.tag) + "</div><h4>" + esc(sc.title) + "</h4><p>Con " + D.conf + " % de confianza obtuviste para μ₁ − μ₂ de " + esc(sc.vv) + " el intervalo <b>" + ICs(D.L, D.U, 2) + "</b> " + esc(sc.u) + " (1 = " + esc(sc.w1) + ", 2 = " + esc(sc.w2) + ").</p></div>" +
+          '<p class="say"><strong>(a)</strong> ¿Qué concluyes sobre las medias?</p>' + opciones("q6a", e._q6a) +
+          '<div class="caso" style="margin-top:16px"><div class="eyebrow">Caso del paso 5 · ' + esc(sp.tag) + "</div><h4>" + esc(sp.title) + "</h4><p>Con " + P.conf + " % de confianza obtuviste para π₁ − π₂ el intervalo <b>" + ICs(P.L, P.U, 4) + "</b> (1 = " + esc(sp.p1) + ", 2 = " + esc(sp.p2) + ").</p></div>" +
+          '<p class="say"><strong>(b)</strong> ¿Qué concluyes sobre las proporciones?</p>' + opciones("q6b", e._q6b) +
+          '<p class="say" style="margin-top:16px"><strong>(c)</strong> Con los mismos datos del paso 4, el nivel de confianza ' + (sube ? "sube" : "baja") + " de " + D.conf + " % a " + nueva + " %. El intervalo para μ₁ − μ₂…</p>" + opciones("q6c", e._q6c) + '<div id="ic6"></div>';
+      },
+      grade: function (e, root) {
+        var D = e.D, P = e.P, a = mcRes(root, "q6a", e._q6a, 1), b = mcRes(root, "q6b", e._q6b, 0.75), c = mcRes(root, "q6c", e._q6c, 0.75);
+        var tip = "(a) " + ICs(D.L, D.U, 2) + (D.estado === "cero" ? " contiene el 0: no hay evidencia de diferencia." : D.estado === "pos" ? " es todo positivo: μ₁ > μ₂." : " es todo negativo: μ₁ < μ₂.") +
+          "  (b) " + ICs(P.L, P.U, 4) + (P.estado === "cero" ? " contiene el 0: no hay evidencia de diferencia." : P.estado === "pos" ? " es todo positivo: π₁ > π₂." : " es todo negativo: π₁ < π₂.") +
+          "  (c) A mayor confianza, mayor t y un intervalo más ancho; a menor confianza, más angosto.";
+        [c, b, a].forEach(function (m) { if (m.why) tip = m.why + " " + tip; });
+        return { pts: a.pts + b.pts + c.pts, mcOk: a.ok && b.ok && c.ok,
+          user: [["(a) Medias", a.elegida], ["(b) Proporciones", b.elegida], ["(c) Efecto de la confianza", c.elegida]],
+          right: [["(a) Correcta", a.correcta], ["(b) Correcta", b.correcta], ["(c) Correcta", c.correcta]], tip: tip };
+      },
+      after: function (e, root) {
+        var D = e.D;
+        $("#ic6", root).innerHTML = cajaIC("ic6a", { L: D.L, U: D.U, m: D.d, c: 0, cname: "0", dec: 2, name: "x̄₁ − x̄₂" },
+          D.estado === "cero" ? "El 0 queda dentro del intervalo: la muestra no basta para afirmar que las medias difieren." : "El 0 queda fuera del intervalo: la muestra respalda que las medias son diferentes.");
+      }
+    },
+
+    /* ---------- 7 · problema inverso ------------------------------------ */
+    {
+      title: "Paso 7 · Del intervalo al nivel de confianza", max: 1.5, parte: 4, comp: "medias",
+      html: function (e) {
+        var I = e.I, sc = I.sc;
+        return '<div class="caso"><div class="eyebrow">Caso · ' + esc(sc.tag) + "</div><h4>" + esc(sc.title) + "</h4><p>" + esc(textoI(I)) + "</p>" +
+          '<p class="src">Fuente: ' + esc(sc.fuente) + '</p><div class="resumen"><span class="chip">n₁ = <b>' + I.n1 + '</b></span><span class="chip amb">n₂ = <b>' + I.n2 + '</b></span><span class="chip">σ₁ = <b>' + fx(I.sd1) + '</b></span><span class="chip amb">σ₂ = <b>' + fx(I.sd2) + '</b></span><span class="chip">Intervalo = <b>' + ICs(I.L, I.U, 2) + "</b></span></div></div>" +
+          '<p class="say">Se trabaja al revés. El margen E es la mitad del ancho del intervalo; el error estándar EE se calcula con σ₁, σ₂, n₁ y n₂; de ahí z = E / EE. En la tabla normal se busca el área a la izquierda de z y se obtiene 1 − α.</p>' +
+          '<div class="formula">E = (U − L) / 2          EE = √( σ₁²/n₁ + σ₂²/n₂ )          z = E / EE\n1 − α = 2 · P(Z ≤ z) − 1' +
+          "<small>z con 2 decimales. Escribe el nivel de confianza en % (por ejemplo 95) o como decimal (0.95).</small></div>" +
+          '<div class="inputs">' + fld("s7e", "Margen de error E") + fld("s7ee", "Error estándar EE") + fld("s7z", "z") + fld("s7c", "Nivel de confianza (%)") + "</div>" +
+          '<div id="mini7"></div><div id="ic7"></div>';
+      },
+      grade: function (e, root) {
+        var I = e.I, E = val(root, "s7e"), ee = val(root, "s7ee"), z = val(root, "s7z"), c = val(root, "s7c");
+        if (c != null && c <= 1) c = c * 100;
+        var zE = I.E / I.EE, oE = eqLU(E, I.E), oee = eqEE(ee, I.EE), oz = z != null && (Math.abs(z - zE) <= 0.0051 || (E != null && ee != null && ee > 0 && Math.abs(z - E / ee) <= 0.0051 && Math.abs(z - zE) <= 0.02)), oc = c != null && (Math.abs(c - I.conf) <= 0.35 || (z != null && Math.abs(c - (2 * Phi(z) - 1) * 100) <= 0.06 && Math.abs(c - I.conf) <= 0.6));
+        mark(root.querySelector("#s7e"), oE); mark(root.querySelector("#s7ee"), oee); mark(root.querySelector("#s7z"), oz); mark(root.querySelector("#s7c"), oc);
+        var tip = "E = (" + f2(I.U) + " − " + f2(I.L) + ") / 2 = " + f2(I.E) + ".  EE = √(" + fx(I.sd1) + "²/" + I.n1 + " + " + fx(I.sd2) + "²/" + I.n2 + ") = " + f2(I.EE) + ".  z = " + f2(I.E) + " / " + f2(I.EE) + " = " + f2(I.z) +
+          ".  P(Z ≤ " + f2(I.z) + ") = " + f5(Phi(I.z)) + " → 1 − α = 2 × " + f5(Phi(I.z)) + " − 1 = " + f4(2 * Phi(I.z) - 1) + ", es decir " + I.conf + " %.";
+        if (c != null && !oc && Math.abs(c - Phi(I.z) * 100) <= 0.35) tip = "Diste el área a la izquierda de z; el nivel de confianza es 2 · P(Z ≤ z) − 1. " + tip;
+        if (z != null && !oz && Math.abs(z - I.E) <= 0.0051) tip = "Te faltó dividir entre el error estándar: z = E / EE. " + tip;
+        return { pts: (oE ? 0.25 : 0) + (oee ? 0.25 : 0) + (oz ? 0.5 : 0) + (oc ? 0.5 : 0),
+          user: [["E", vis(E)], ["EE", vis(ee)], ["z", vis(z)], ["Confianza", c == null ? "—" : (Math.round(c * 100) / 100) + " %"]],
+          right: [["E", f2(I.E)], ["EE", f2(I.EE)], ["z", f2(I.z)], ["Confianza", I.conf + " %"]], tip: tip };
+      },
+      after: function (e, root) {
+        var I = e.I;
+        $("#mini7", root).innerHTML = miniZ([kzz(I.z)]);
+        $("#ic7", root).innerHTML = cajaIC("ici", { L: I.L, U: I.U, m: I.d, dec: 2, name: "x̄₁ − x̄₂" }, "Un intervalo con " + I.conf + " % de confianza: E = " + f2(I.E) + " y EE = " + f2(I.EE) + " ⇒ z = " + f2(I.z) + ".");
+      }
+    }
+  ];
+
+  /* caso (contexto + datos) */
+  function casoHTML(sc, texto, chips) {
+    return '<div class="caso"><div class="eyebrow">Caso · ' + esc(sc.tag) + "</div><h4>" + esc(sc.title) + "</h4><p>" + esc(texto) + "</p>" +
+      '<p class="src">Fuente: ' + esc(sc.fuente) + "</p><div class=\"resumen\">" +
+      chips.map(function (c, i) { return '<span class="chip' + (i % 2 ? " amb" : "") + '">' + esc(c[0]) + " = <b>" + esc(c[1]) + "</b></span>"; }).join("") + "</div></div>";
+  }
+
+  /* =====================================================================
+     EJEMPLOS RESUELTOS (los de la sesión 5), calculados con las mismas tablas
+     ===================================================================== */
+  function ejemplosResueltos() {
+    var ej = [], zz = function (conf) { return zCerca(zAreaConf(conf)).z; };
+    /* 1 · cociente de varianzas (ejemplo 8: gaseosas) */
+    var r8 = 6.26 * 6.26 / (6.088 * 6.088), fa8 = fval(0.05, 9, 8), fb8 = fval(0.05, 8, 9);
+    ej.push(["Cociente de varianzas · ejemplo del gasto en gaseosas (F de Fisher)",
+      "Datos: distrito A: n₁ = 10, s₁ = 6.260;  distrito B: n₂ = 9, s₂ = 6.088;  1 − α = 0.90 → α/2 = 0.05\n" +
+      "1) Razón: s₁²/s₂² = 6.260² / 6.088² = " + fd(r8, 4) + "\n" +
+      "2) gl: n₁ − 1 = 9 y n₂ − 1 = 8.   F(0.05 ; 9 , 8) = " + f2(fa8) + "   y   F(0.05 ; 8 , 9) = " + f2(fb8) + "  (tabla F, área a la derecha 0.05)\n" +
+      "3) L = " + fd(r8, 4) + " × 1/" + f2(fa8) + " = " + fd(r8 / fa8, 3) + "      U = " + fd(r8, 4) + " × " + f2(fb8) + " = " + fd(r8 * fb8, 3) + "\n" +
+      "Intervalo para σ₁²/σ₂² = <" + fd(r8 / fa8, 3) + " ; " + fd(r8 * fb8, 3) + ">\n" +
+      "Conclusión: contiene el 1 → con 90 % de confianza las varianzas de los gastos en ambos distritos son homogéneas."]);
+    /* 2 · ejemplo 9: préstamos, caso II */
+    var fa9 = 3.10, fb9 = 3.36, r9 = 260 * 260 / (250 * 250), sp2 = (11 * 260 * 260 + 14 * 250 * 250) / 25, ee9 = Math.sqrt(sp2) * Math.sqrt(1 / 12 + 1 / 15), t9 = tval(25, 0.975), E9 = t9 * ee9;
+    ej.push(["Diferencia de medias, caso II · ejemplo de los préstamos (varianzas similares)",
+      "Datos: Finanzas Unidas: n₁ = 12, x̄₁ = 3600, s₁ = 260;  Negocio Creciendo: n₂ = 15, x̄₂ = 3000, s₂ = 250;  1 − α = 0.95\n" +
+      "1) Primero el cociente: s₁²/s₂² = " + fd(r9, 4) + ".  F(0.025 ; 11 , 14) = " + f2(fa9) + " y F(0.025 ; 14 , 11) = " + f2(fb9) + " (valores de la tabla del curso)\n" +
+      "   <" + fd(r9 / fa9, 4) + " ; " + fd(r9 * fb9, 4) + "> contiene el 1 → varianzas similares → caso II (t con n₁ + n₂ − 2 = 25 gl).\n" +
+      "2) t(0.975 ; 25) = " + f3(t9) + "   (columna 0.975, fila 25 de la tabla t)\n" +
+      "3) sp² = (11 × 260² + 14 × 250²) / 25 = " + fd(sp2, 2) + ";   EE = sp · √(1/12 + 1/15) = " + fd(ee9, 4) + "\n" +
+      "4) E = " + f3(t9) + " × " + fd(ee9, 4) + " = " + fd(E9, 4) + ";   x̄₁ − x̄₂ = 600\n" +
+      "Intervalo = <" + fd(600 - E9, 4) + " ; " + fd(600 + E9, 4) + ">\n" +
+      "Conclusión: los dos límites son positivos (no contiene el 0) → el monto promedio de Finanzas Unidas es mayor."]);
+    /* 3 · caso III con el ejercicio propuesto 3 (sucursales) */
+    var A = [1240, 1230, 1220, 1240, 1230, 1250, 1260, 1200, 1220, 1210], B = [1250, 1170, 1170, 1240, 1260, 1270, 1300, 1220, 1280, 1300, 1280, 1220];
+    var mean = function (a) { return a.reduce(function (s, x) { return s + x; }, 0) / a.length; };
+    var sdv = function (a) { var m = mean(a); return Math.sqrt(a.reduce(function (s, x) { return s + (x - m) * (x - m); }, 0) / (a.length - 1)); };
+    var m1 = mean(A), m2 = mean(B), q1 = sdv(A), q2 = sdv(B), n1 = A.length, n2 = B.length, rr = q1 * q1 / (q2 * q2), fl = fval(0.05, 9, 11), fu = fval(0.05, 11, 9);
+    var w1 = q1 * q1 / n1, w2 = q2 * q2 / n2, gg = Math.pow(w1 + w2, 2) / (w1 * w1 / (n1 - 1) + w2 * w2 / (n2 - 1)), gr = Math.round(gg), tt = tval(gr, 0.95), ee3 = Math.sqrt(w1 + w2), E3 = tt * ee3;
+    ej.push(["Diferencia de medias, caso III · ejercicio propuesto de las sucursales (varianzas diferentes)",
+      "Datos: sucursal A: n₁ = 10, x̄₁ = " + fd(m1, 2) + ", s₁ = " + fd(q1, 3) + ";  sucursal B: n₂ = 12, x̄₂ = " + fd(m2, 2) + ", s₂ = " + fd(q2, 3) + ";  1 − α = 0.90\n" +
+      "1) Cociente: s₁²/s₂² = " + fd(rr, 4) + ".  F(0.05 ; 9 , 11) = " + f2(fl) + " y F(0.05 ; 11 , 9) = " + f2(fu) + "\n" +
+      "   <" + fd(rr / fl, 3) + " ; " + fd(rr * fu, 3) + "> NO contiene el 1 → varianzas diferentes → caso III (t con g gl).\n" +
+      "2) g = (s₁²/n₁ + s₂²/n₂)² / [ (s₁²/n₁)²/9 + (s₂²/n₂)²/11 ] = " + fd(gg, 2) + " ≈ " + gr + ".   t(0.95 ; " + gr + ") = " + f3(tt) + "\n" +
+      "3) EE = √(s₁²/n₁ + s₂²/n₂) = " + fd(ee3, 3) + ";   E = " + f3(tt) + " × " + fd(ee3, 3) + " = " + fd(E3, 3) + ";   x̄₁ − x̄₂ = " + fd(m1 - m2, 2) + "\n" +
+      "Intervalo = <" + fd(m1 - m2 - E3, 2) + " ; " + fd(m1 - m2 + E3, 2) + ">\n" +
+      "Conclusión: los dos límites son negativos (no contiene el 0) → el ingreso promedio diario de la sucursal B es mayor que el de la A."]);
+    /* 4 · σ conocidas (z) */
+    var zc = zz(95), eek = Math.sqrt(3 * 3 / 40 + 3.6 * 3.6 / 50), Ek = zc * eek;
+    ej.push(["Diferencia de medias, caso I · σ conocidas (z) · ejemplo de práctica",
+      "Datos: n₁ = 40, x̄₁ = 18.4, σ₁ = 3.0;  n₂ = 50, x̄₂ = 16.9, σ₂ = 3.6;  1 − α = 0.95\n" +
+      "1) σ₁ y σ₂ conocidas → z.   1 − α/2 = 0.975 → z = " + f2(zc) + "\n" +
+      "2) EE = √(σ₁²/n₁ + σ₂²/n₂) = √(3.0²/40 + 3.6²/50) = " + fd(eek, 4) + "\n" +
+      "3) E = z · EE = " + f2(zc) + " × " + fd(eek, 4) + " = " + fd(Ek, 4) + ";   x̄₁ − x̄₂ = 1.5\n" +
+      "Intervalo = <" + fd(1.5 - Ek, 4) + " ; " + fd(1.5 + Ek, 4) + ">\n" +
+      "Conclusión: el 0 queda fuera del intervalo (todo positivo) → μ₁ es mayor que μ₂."]);
+    /* 5 · diferencia de proporciones (ejemplo 10) */
+    var p1 = 26 / 350, p2 = 40 / 420, p1r = 0.0743, p2r = 0.0952, z10 = zz(97), ee10 = Math.sqrt(p1r * (1 - p1r) / 350 + p2r * (1 - p2r) / 420), E10 = z10 * ee10, d10 = p1r - p2r;
+    ej.push(["Diferencia de proporciones · ejemplo de las barras defectuosas (z)",
+      "Datos: AKI: n₁ = 350, x₁ = 26 → p₁ = " + fd(p1, 4) + ";  Fierros Duros: n₂ = 420, x₂ = 40 → p₂ = " + fd(p2, 4) + ";  1 − α = 0.97\n" +
+      "1) 1 − α/2 = 0.985 → z = " + f2(z10) + "  (tabla normal)\n" +
+      "2) EE = √( 0.0743 × 0.9257 / 350 + 0.0952 × 0.9048 / 420 ) = " + fd(ee10, 4) + "\n" +
+      "3) E = " + f2(z10) + " × " + fd(ee10, 4) + " = " + fd(E10, 4) + ";   p₁ − p₂ = " + fd(d10, 4) + "\n" +
+      "Intervalo = <" + fd(d10 - E10, 4) + " ; " + fd(d10 + E10, 4) + ">\n" +
+      "Conclusión: contiene el 0 → con 97 % de confianza las proporciones de barras defectuosas de ambas empresas son iguales."]);
+    return ej.map(function (x) {
+      return '<details class="ejr"><summary>' + esc(x[0]) + '</summary><div class="formula">' + esc(x[1]) + "</div></details>";
+    }).join("");
+  }
+  $("#ejemplos").innerHTML = ejemplosResueltos();
+
+  /* =====================================================================
+     FLUJO
+     ===================================================================== */
+  $("#startBtn").addEventListener("click", function () {
+    var ap = $("#in-ape").value.trim(), no = $("#in-nom").value.trim();
+    if (ap.length < 2 || no.length < 2) { $("#idErr").textContent = "Escribe tus apellidos y nombres para poder emitir la constancia."; return; }
+    ST.alumno = { ape: ap, nom: no, cod: $("#in-cod").value.trim(), sec: $("#in-sec").value.trim() };
+    EX = buildExercise();
+    if (!EX) { $("#idErr").textContent = "No se pudo generar el caso; vuelve a intentarlo."; return; }
+    renderContext();
+    $("#screen-intro").hidden = true;
+    $("#screen-exercise").hidden = false;
+    $("#timer").hidden = false; $("#scorepill").hidden = false; $("#tablesBtn").hidden = false;
+    paintScore(); startTimer(); renderStep(0);
+  });
+
+  function renderContext() {
+    $("#ctx-tag").textContent = "Sesión 5 · Intervalos de confianza para dos poblaciones";
+    $("#ctx-title").textContent = "Tu mesa de trabajo: las tablas Z, t y F de Fisher";
+    $("#ctx-text").textContent = "Primero reconocerás qué intervalo corresponde a cada situación y compararás dos varianzas con la F. Luego construirás el intervalo para la diferencia de medias (σ conocidas y desconocidas) y para la diferencia de proporciones con casos de 2026, y terminarás interpretando los intervalos. Tienes las tres tablas siempre a la mano con el botón «Tablas» de la barra superior.";
+    $("#ctx-src").textContent = "Los datos cambian en cada intento; las situaciones son simuladas con fines didácticos.";
+    $("#ctx-datos").innerHTML =
+      '<span class="chip">z: <b>2 decimales</b></span>' +
+      '<span class="chip amb">t: <b>3 decimales</b> · F: <b>2 decimales</b></span>' +
+      '<span class="chip">Intervalos: <b>L y U</b></span>';
+  }
+
+  function tarjetaParte(titulo, sub) {
+    var d = document.createElement("div");
+    d.className = "parte";
+    d.innerHTML = "<b>" + esc(titulo) + "</b><span>" + esc(sub) + "</span>";
+    $("#steps").appendChild(d);
+  }
+  var PARTES = {
+    0: ["Parte 1 · Elegir el intervalo y comparar varianzas", "Antes de comparar medias hay que saber qué intervalo usar y si las varianzas de las dos poblaciones son similares: eso lo decide la F de Fisher."],
+    2: ["Parte 2 · Diferencia de medias", "Con σ conocidas (z) y con σ desconocidas (t, caso II o III según el cociente de varianzas)."],
+    4: ["Parte 3 · Diferencia de proporciones", "Dos proporciones con la normal estándar: el error estándar suma las dos varianzas."],
+    5: ["Parte 4 · Interpretar y trabajar al revés", "Mira si el intervalo contiene el 0 (o el 1) y recupera el nivel de confianza a partir de un intervalo."]
+  };
+
+  function renderStep(i) {
+    var step = STEPS[i], e = EX;
+    if (PARTES[i]) tarjetaParte(PARTES[i][0], PARTES[i][1]);
+    var card = document.createElement("section");
+    card.className = "card step"; card.id = "step-" + i;
+    card.innerHTML = '<div class="head"><span class="no">' + (i + 1) + "/" + STEPS.length + '</span><h3>' + step.title + "</h3></div>" +
+      step.html(e) +
+      '<div class="verdict" id="v-' + i + '"></div>' +
+      '<div class="actions"><button class="btn" type="button" id="go-' + i + '">Comprobar y continuar</button>' +
+      '<span style="font-size:.85rem;color:var(--ink-3)">Vale ' + step.max + " punto" + (step.max === 1 ? "" : "s") + "</span></div>";
+    $("#steps").appendChild(card);
+    var first = card.querySelector('input[type="text"]');
+    if (first) first.focus({ preventScroll: true });
+    card.scrollIntoView({ behavior: "smooth", block: "start" });
+
+    var btn = $("#go-" + i), checked = false;
+    btn.addEventListener("click", function () {
+      if (ST.finished) return;
+      if (!checked) {
+        checked = true;
+        var res = step.grade(e, card);
+        res.title = step.title; res.max = step.max; res.comp = step.comp;
+        ST.results[i] = res; ST.pts += res.pts; paintScore();
+        var v = $("#v-" + i);
+        var full = res.pts >= step.max - 1e-9, zero = res.pts <= 1e-9;
+        v.className = "verdict show " + (zero ? "bad" : "good");
+        v.innerHTML = "<b>" + (full ? "Correcto · " : (zero ? "Incorrecto · " : "Parcialmente correcto · ")) +
+          (Math.round(res.pts * 100) / 100) + " / " + step.max + " pts</b><br>" + esc(res.tip);
+        Array.prototype.forEach.call(card.querySelectorAll("input"), function (x) { x.disabled = true; });
+        if (step.after) { try { step.after(e, card); } catch (err) { if (window.console) console.error(err); } }
+        btn.textContent = i === STEPS.length - 1 ? "Ver resultados →" : "Continuar →";
+      } else {
+        var r = ST.results[i], full2 = r.pts >= r.max - 1e-9, zero2 = r.pts <= 1e-9;
+        card.className = "card done";
+        card.innerHTML = '<span class="no">' + (i + 1) + "</span><span>" + esc(r.title) + '</span><span class="pts ' +
+          (full2 ? "p-full" : (zero2 ? "p-zero" : "p-part")) + '">' + (Math.round(r.pts * 100) / 100) + " / " + r.max + "</span>";
+        ST.idx = i + 1; paintScore();
+        if (i + 1 < STEPS.length) renderStep(i + 1); else finish(false);
+      }
+    });
+  }
+
+  /* =====================================================================
+     RESULTADOS
+     ===================================================================== */
+  var COMP = [
+    { k: "caso", t: "Elección del intervalo", bien: "Reconoces cuándo usar z, t o F y cómo elegir entre los casos II y III.",
+      mal: "Repasa: medias con σ conocidas → z; σ desconocidas → t (antes se mira el cociente de varianzas); proporciones → z; varianzas → F de Fisher." },
+    { k: "var", t: "Cociente de varianzas (F)", bien: "Lees bien la F con sus grados de libertad y decides con el 1.",
+      mal: "Repasa: L = (s₁²/s₂²)/F(α/2 ; n₁−1 , n₂−1) y U = (s₁²/s₂²)·F(α/2 ; n₂−1 , n₁−1). Si el intervalo contiene el 1, las varianzas son similares." },
+    { k: "medias", t: "Diferencia de medias", bien: "Construyes el intervalo para μ₁ − μ₂ con z o t, y recuperas el nivel de confianza.",
+      mal: "Repasa: EE = √(σ₁²/n₁ + σ₂²/n₂); caso II: sp y n₁+n₂−2 gl; caso III: g gl. El intervalo es (x̄₁ − x̄₂) ± t·EE." },
+    { k: "prop", t: "Diferencia de proporciones", bien: "Calculas p₁, p₂ y el error estándar con raíz de la suma de varianzas.",
+      mal: "Repasa: EE = √( p₁(1−p₁)/n₁ + p₂(1−p₂)/n₂ ), con la raíz de toda la suma; z con el área 1 − α/2." },
+    { k: "interp", t: "Interpretación", bien: "Interpretas los intervalos: decides mirando si contienen el 0.",
+      mal: "Repasa: si el intervalo de una diferencia contiene el 0, no hay evidencia de diferencia; si es todo positivo, el primero es mayor; todo negativo, el primero es menor." }
+  ];
+
+  function finish(byTime) {
+    if (ST.finished) return;
+    ST.finished = true;
+    if (ST.tick) { clearInterval(ST.tick); ST.tick = null; }
+    $("#aviso3").hidden = true; $("#drawer").hidden = true;
+    var used = TOTAL_SEG - ST.left, e = EX, i;
+    for (i = 0; i < STEPS.length; i++) {
+      if (!ST.results[i]) ST.results[i] = {
+        title: STEPS[i].title, max: STEPS[i].max, pts: 0, comp: STEPS[i].comp,
+        user: [["Respuesta", "sin responder — se acabó el tiempo"]], right: [["—", "—"]],
+        tip: "No llegaste a este paso. Repite el laboratorio: te tocarán otros casos distintos."
+      };
+    }
+    var pts = Math.round(ST.pts * 10) / 10;
+    $("#screen-exercise").hidden = true;
+    $("#screen-results").hidden = false;
+    $("#timer").hidden = true; $("#tablesBtn").hidden = true;
+    $("#trackFill").style.width = "100%";
+
+    $("#r-grade").innerHTML = pts.toFixed(1) + "<small> / 20</small>";
+    var band = pts >= 18 ? ["Excelente", "var(--ok-soft)", "var(--ok)"]
+      : pts >= 15 ? ["Logrado", "var(--accent-soft)", "var(--accent)"]
+      : pts >= 11 ? ["En proceso", "var(--amber-soft)", "var(--amber)"]
+      : ["Requiere refuerzo", "var(--bad-soft)", "var(--bad)"];
+    var bg = $("#r-badge"); bg.textContent = band[0]; bg.style.background = band[1]; bg.style.color = band[2];
+    var mm = Math.floor(used / 60), ss = used % 60;
+    $("#r-line").textContent = (byTime ? "Se agotaron los 20 minutos. " : "") + "Terminaste en " + mm + " min " +
+      (ss < 10 ? "0" : "") + ss + " s. " +
+      (pts >= 15 ? "Eliges bien el intervalo, lees las tablas t, z y F y decides con criterio si hay diferencia."
+                 : "Revisa la retroalimentación: decidir el caso con el cociente de varianzas, leer la F y armar el error estándar son los puntos críticos.");
+
+    var pComp = function (c) {
+      var g = 0, m = 0;
+      ST.results.forEach(function (r, k) { if (STEPS[k].comp === c) { g += r.pts; m += r.max; } });
+      return [g, m];
+    };
+    var lleno = function (c) { var g = pComp(c); return g[0] >= g[1] - 1e-9; };
+    var mcOK = [0, 1, 5].every(function (k) { return ST.results[k].mcOk === true; });
+    var logros = [
+      { on: lleno("caso") && lleno("var"), ic: "F", t: "Dueño de la F", d: "Pasos 1 y 2 sin errores" },
+      { on: lleno("medias"), ic: "μ₁−μ₂", t: "Maestro de las medias", d: "Pasos 3, 4 y 7 sin errores" },
+      { on: lleno("prop"), ic: "π₁−π₂", t: "Rey de las proporciones", d: "Paso 5 sin errores" },
+      { on: used <= 900 && pts >= 13, ic: "⏱", t: "Ágil", d: "Buen puntaje en menos de 15 minutos" },
+      { on: mcOK && lleno("interp"), ic: "?", t: "Intérprete", d: "Todas las preguntas de razonamiento acertadas" }
+    ];
+    $("#r-logros").innerHTML = logros.map(function (l) {
+      return '<div class="logro' + (l.on ? " on" : "") + '"><span class="ic">' + esc(l.ic) + "</span><div><b>" +
+        esc(l.t) + "</b><span>" + esc(l.d) + "</span></div></div>";
+    }).join("");
+
+    $("#r-diagnostico").innerHTML = COMP.map(function (c) {
+      var g = pComp(c.k), r = g[1] ? g[0] / g[1] : 0;
+      return '<div class="prop"><b>' + esc(c.t) + " · " + (Math.round(g[0] * 100) / 100) + " / " + g[1] +
+        "</b><span>" + esc(r >= 0.999 ? c.bien : c.mal) + "</span></div>";
+    }).join("");
+
+    var fb = $("#r-feedback"); fb.innerHTML = "";
+    ST.results.forEach(function (r) {
+      var full = r.pts >= r.max - 1e-9, zero = r.pts <= 1e-9;
+      var d = document.createElement("div"); d.className = "fb";
+      var dl = r.user.map(function (u, q) {
+        var c = r.right[q] || r.right[0] || ["", ""];
+        return "<dt>Tu respuesta</dt><dd>" + esc(u[0]) + ": " + esc(u[1]) + "</dd><dt>Correcta</dt><dd>" + esc(c[0]) + ": " + esc(c[1]) + "</dd>";
+      }).join("");
+      d.innerHTML = "<h4><span class='mark " + (full ? "y" : zero ? "n" : "p") + "'>" + (full ? "✓" : zero ? "✕" : "~") + "</span>" +
+        esc(r.title) + " <span style='margin-left:auto;font-family:\"IBM Plex Mono\",monospace;font-size:.8rem;color:var(--ink-3)'>" +
+        (Math.round(r.pts * 100) / 100) + "/" + r.max + "</span></h4><dl>" + dl + "</dl><p class='tip'>" + esc(r.tip) + "</p>";
+      fb.appendChild(d);
+    });
+
+    var K = e.K, D = e.D, P = e.P;
+    $("#r-cvcap").textContent = D.sc.title + ": intervalo del " + D.conf + " % para μ₁ − μ₂ (paso 4) y " + P.sc.title + ": intervalo del " + P.conf + " % para π₁ − π₂ (paso 5). La línea punteada marca el 0.";
+    $("#r-cv").innerHTML = cajaIC("ric", { L: D.L, U: D.U, m: D.d, c: 0, cname: "0", dec: 2, name: "x̄₁ − x̄₂" },
+      "Medias: " + ICs(D.L, D.U, 2) + " " + D.sc.u + (D.estado === "cero" ? " contiene el 0: sin diferencia clara." : " no contiene el 0: hay diferencia.")) +
+      cajaIC("ricp", { L: P.L, U: P.U, m: P.d, c: 0, cname: "0", dec: 4, name: "p₁ − p₂" },
+      "Proporciones: " + ICs(P.L, P.U, 4) + (P.estado === "cero" ? " contiene el 0: sin diferencia clara." : " no contiene el 0: hay diferencia."));
+    $("#r-resumen").innerHTML = tablaResumen(e);
+
+    var nombre = ST.alumno.ape.toUpperCase() + ", " + ST.alumno.nom;
+    $("#c-name").textContent = nombre;
+    $("#c-caso1").textContent = D.sc.title + " · " + K.sc.title;
+    $("#c-caso2").textContent = P.sc.title + " · " + e.I.sc.title;
+    $("#c-score").textContent = pts.toFixed(1) + " / 20";
+    $("#c-time").textContent = mm + " min " + (ss < 10 ? "0" : "") + ss + " s";
+    var d2 = new Date();
+    $("#c-date").textContent = d2.toLocaleDateString("es-PE", { day: "2-digit", month: "long", year: "numeric" });
+    var seed = nombre + "|" + D.sc.title + "|" + P.sc.title + "|" + d2.getTime() + "|" + pts;
+    var hsh = 0; for (var q2 = 0; q2 < seed.length; q2++) { hsh = (hsh * 31 + seed.charCodeAt(q2)) >>> 0; }
+    $("#c-code").textContent = "S5DP-" + hsh.toString(36).toUpperCase() +
+      (ST.alumno.cod ? " · " + ST.alumno.cod : "") + (ST.alumno.sec ? " · " + ST.alumno.sec : "");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function tablaResumen(e) {
+    var D = e.D, K = e.K, P = e.P, I = e.I;
+    var f = [
+      ["Varianzas · s₁²/s₂²", fd(D.ratio, 3), sd2(D, D.s1) + "² / " + sd2(D, D.s2) + "²"],
+      ["Varianzas · F(" + D.al + " ; " + D.da + " , " + D.db + ")", f2(D.Fa), "tabla F, columna " + D.da + ", fila " + D.db],
+      ["Varianzas · F(" + D.al + " ; " + D.db + " , " + D.da + ")", f2(D.Fb), "tabla F, columna " + D.db + ", fila " + D.da],
+      ["Varianzas · intervalo σ₁²/σ₂²", ICs(D.Lr, D.Ur, 3), D.homog ? "contiene el 1: varianzas similares" : "no contiene el 1: varianzas diferentes"],
+      ["Medias (z) · z de 1 − α = " + (K.conf / 100).toFixed(2), f2(K.z), "área " + fd(K.area, 3) + " en la tabla normal"],
+      ["Medias (z) · EE", f2(K.EE), "√(" + fx(K.sd1) + "²/" + K.n1 + " + " + fx(K.sd2) + "²/" + K.n2 + ")"],
+      ["Medias (z) · intervalo μ₁ − μ₂", ICs(K.L, K.U, 2), f2(K.d) + " ± " + f2(K.E)],
+      ["Medias (t) · caso", D.caso === 2 ? "II (similares)" : "III (diferentes)", D.caso === 2 ? "t con n₁ + n₂ − 2 = " + D.df + " gl" : "g = " + fd(D.g, 2) + " ≈ " + D.gr + " gl"],
+      ["Medias (t) · t(" + D.tp + " ; " + D.df + ")", f3(D.t), "columna " + D.tp + ", fila " + D.df],
+      ["Medias (t) · EE", f2(D.EE), D.caso === 2 ? "sp · √(1/n₁ + 1/n₂)" : "√(s₁²/n₁ + s₂²/n₂)"],
+      ["Medias (t) · intervalo μ₁ − μ₂", ICs(D.L, D.U, 2), f2(D.d) + " ± " + f2(D.E)],
+      ["Proporciones · p₁ y p₂", fd(P.p1, 3) + " y " + fd(P.p2, 3), P.x1 + "/" + P.n1 + " y " + P.x2 + "/" + P.n2],
+      ["Proporciones · z", f2(P.z), "área " + fd(P.area, 3)],
+      ["Proporciones · EE", fd(P.EE, 4), "√(p₁(1−p₁)/n₁ + p₂(1−p₂)/n₂)"],
+      ["Proporciones · intervalo π₁ − π₂", ICs(P.L, P.U, 4), fd(P.d, 4) + " ± " + fd(P.E, 4)],
+      ["Inverso · z", f2(I.z), f2(I.E) + " / " + f2(I.EE)],
+      ["Inverso · nivel de confianza", I.conf + " %", "2 × " + f5(Phi(I.z)) + " − 1"]
+    ];
+    var h = '<table class="xtab"><thead><tr><th class="corner">Cálculo</th><th>Valor</th><th>Cómo se obtiene</th></tr></thead><tbody>';
+    f.forEach(function (r) {
+      h += "<tr><th>" + esc(r[0]) + "</th><td>" + esc(r[1]) + '</td><td style="text-align:left">' + esc(r[2]) + "</td></tr>";
+    });
+    return h + "</tbody></table>";
+  }
+
+  $("#printBtn").addEventListener("click", function () { window.print(); });
+  $("#againBtn").addEventListener("click", function () { location.reload(); });
+  window.addEventListener("beforeunload", function (ev) {
+    if (ST.started && !ST.finished) { ev.preventDefault(); ev.returnValue = ""; }
+  });
+
+  window.__LAB11__ = { buildExercise: buildExercise, construirD: construirD, construirK: construirK, construirP2: construirP2, construirI: construirI, construirSit: construirSit,
+                       DIF: DIF, KZ: KZ, PRO2: PRO2, ex: function () { return EX; }, st: function () { return ST; },
+                       steps: STEPS, avisar: avisarTresMinutos, math: { Phi: Phi, zCerca: zCerca, tval: tval, fval: fval },
+                       _salta: function (s) { ST.left = s; } };
+
+})();
+</script>
+</body>
+</html>
